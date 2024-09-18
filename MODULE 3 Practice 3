@@ -1,0 +1,82 @@
+public enum UserRole
+{
+    Admin,
+    User
+}
+
+class User
+{
+    public string name { get; set; }
+    public string mail { get; set; }
+    public UserRole role { get; set; }
+
+    public User() { }
+
+    public User(string name, string mail, UserRole role)
+    {
+        this.name = name;
+        this.mail = mail;
+        this.role = role;
+    }
+
+    public override string ToString()
+    {
+        return $"USER INFO:\nName: {name},\nMail: {mail},\nRole: {role}\n";
+    }
+}
+
+class UserManager
+{
+    public List<User> users { get; set; }
+
+    public UserManager()
+    {
+        users = new List<User>();
+    }
+
+    public void AddUser(User user)
+    {
+        users.Add(user);
+    }
+
+    public bool UpdateUser(User oldUser, User newUser)
+    {
+        
+        var existingUser = users.Find(u => u.mail == oldUser.mail);
+
+        if (existingUser != null)
+        {
+            // Обновление свойств существующего пользователя
+            existingUser.name = newUser.name;
+            existingUser.mail = newUser.mail;
+            existingUser.role = newUser.role;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public void RemoveUser(User user)
+    {
+        users.Remove(user);
+    }
+}
+
+class Program
+{
+    public static void Main(string []args)
+    {
+        UserManager manager = new UserManager();
+        User user1 = new User("Алексей", "test1@mail.ru", UserRole.User);
+        User user2 = new User("Тимур", "test2@mail.ru", UserRole.User);
+        User user3 = new User("Admin", "adminAdminovich@gmail.com", UserRole.Admin);
+
+        manager.AddUser(user1);
+        manager.AddUser(user2);
+        manager.AddUser(user3);
+
+        Console.WriteLine(manager.UpdateUser(user2, new User("d", "d", UserRole.User)));
+    }
+}
