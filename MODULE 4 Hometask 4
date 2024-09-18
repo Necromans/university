@@ -1,3 +1,4 @@
+//TASK 1
 //БЫЛО:
 //public class Order
 //{
@@ -54,3 +55,237 @@ public class EmailNotifier
     }
 }
 
+
+//TASK 2
+//БЫЛО:
+public class Employee
+{
+    public string Name { get; set; }
+    public double BaseSalary { get; set; }
+    public string EmployeeType { get; set; } // "Permanent", "Contract", "Intern"
+}
+
+//public class EmployeeSalaryCalculator
+//{
+//    public double CalculateSalary(Employee employee)
+//    {
+//        if (employee.EmployeeType == "Permanent")
+//        {
+//            return employee.BaseSalary * 1.2;
+//        }
+//        else if (employee.EmployeeType == "Contract")
+//        {
+//            return employee.BaseSalary * 1.1;
+//        }
+//        else if (employee.EmployeeType == "Intern")
+//        {
+//            return employee.BaseSalary * 0.8;
+//        }
+//        else
+//        {
+//            throw new NotSupportedException("Employee type not supported");
+//        }
+//    }
+//}
+
+//СТАЛО:
+
+public interface ISalaryCalculator
+{
+    double CalculateSalary(Employee employee);
+}
+
+public class PermanentEmployeeSalaryCalculator : ISalaryCalculator
+{
+    public double CalculateSalary(Employee employee)
+    {
+        return employee.BaseSalary * 1.2;
+    }
+}
+
+public class ContractEmployeeSalaryCalculator : ISalaryCalculator
+{
+    public double CalculateSalary(Employee employee)
+    {
+        return employee.BaseSalary * 1.1;
+    }
+}
+
+public class InternSalaryCalculator : ISalaryCalculator
+{
+    public double CalculateSalary(Employee employee)
+    {
+        return employee.BaseSalary * 0.8;
+    }
+}
+
+public class SalaryCalculatorFactory
+{
+    public static ISalaryCalculator GetCalculator(Employee employee)
+    {
+        return employee.EmployeeType switch
+        {
+            "Permanent" => new PermanentEmployeeSalaryCalculator(),
+            "Contract" => new ContractEmployeeSalaryCalculator(),
+            "Intern" => new InternSalaryCalculator(),
+            _ => throw new NotSupportedException("Employee type not supported")
+        };
+    }
+}
+
+//TASK 3
+//БЫЛО:
+//public interface IPrinter
+//{
+//    void Print(string content);
+//    void Scan(string content);
+//    void Fax(string content);
+//}
+
+//public class AllInOnePrinter : IPrinter
+//{
+//    public void Print(string content)
+//    {
+//        Console.WriteLine("Printing: " + content);
+//    }
+
+//    public void Scan(string content)
+//    {
+//        Console.WriteLine("Scanning: " + content);
+//    }
+
+//    public void Fax(string content)
+//    {
+//        Console.WriteLine("Faxing: " + content);
+//    }
+//}
+
+//public class BasicPrinter : IPrinter
+//{
+//    public void Print(string content)
+//    {
+//        Console.WriteLine("Printing: " + content);
+//    }
+
+//    public void Scan(string content)
+//    {
+//        throw new NotImplementedException();
+//    }
+
+//    public void Fax(string content)
+//    {
+//        throw new NotImplementedException();
+//    }
+//}
+
+//СТАЛО:
+public interface IPrintable
+{
+    void Print(string content);
+}
+
+public interface IScannable
+{
+    void Scan(string content);
+}
+
+public interface IFaxable
+{
+    void Fax(string content);
+}
+
+public class AllInOnePrinter : IPrintable, IScannable, IFaxable
+{
+    public void Print(string content)
+    {
+        Console.WriteLine("Printing: " + content);
+    }
+
+    public void Scan(string content)
+    {
+        Console.WriteLine("Scanning: " + content);
+    }
+
+    public void Fax(string content)
+    {
+        Console.WriteLine("Faxing: " + content);
+    }
+}
+
+public class BasicPrinter : IPrintable
+{
+    public void Print(string content)
+    {
+        Console.WriteLine("Printing: " + content);
+    }
+}
+
+//TASK 4
+//БЫЛО:
+//public class EmailSender
+//{
+//    public void SendEmail(string message)
+//    {
+//        Console.WriteLine("Email sent: " + message);
+//    }
+//}
+
+//public class SmsSender
+//{
+//    public void SendSms(string message)
+//    {
+//        Console.WriteLine("SMS sent: " + message);
+//    }
+//}
+
+//public class NotificationService
+//{
+//    private EmailSender emailSender = new EmailSender();
+//    private SmsSender smsSender = new SmsSender();
+
+//    public void SendNotification(string message)
+//    {
+//        emailSender.SendEmail(message);
+//        smsSender.SendSms(message);
+//    }
+//}
+
+//СТАЛО:
+public interface INotificationSender
+{
+    void SendNotification(string message);
+}
+
+public class EmailSender : INotificationSender
+{
+    public void SendNotification(string message)
+    {
+        Console.WriteLine("Email sent: " + message);
+    }
+}
+
+public class SmsSender : INotificationSender
+{
+    public void SendNotification(string message)
+    {
+        Console.WriteLine("SMS sent: " + message);
+    }
+}
+
+public class NotificationService
+{
+    private readonly List<INotificationSender> _notificationSenders;
+
+    public NotificationService(List<INotificationSender> notificationSenders)
+    {
+        _notificationSenders = notificationSenders;
+    }
+
+    public void SendNotification(string message)
+    {
+        foreach (var sender in _notificationSenders)
+        {
+            sender.SendNotification(message);
+        }
+    }
+}
