@@ -1,0 +1,280 @@
+//TASK 1
+//БЫЛО:
+//public class Invoice
+//{
+//    public int Id { get; set; }
+//    public List<Item> Items { get; set; }
+//    public double TaxRate { get; set; }
+
+//    public double CalculateTotal()
+//    {
+//        double subTotal = 0;
+//        foreach (var item in Items)
+//        {
+//            subTotal += item.Price;
+//        }
+//        return subTotal + (subTotal * TaxRate);
+//    }
+
+//    public void SaveToDatabase()
+//    {
+//        // Логика для сохранения счета-фактуры в базу данных
+//    }
+//}
+
+//СТАЛО:
+public class Invoice
+{
+    public int Id { get; set; }
+    public List<Item> Items { get; set; }
+    public double TaxRate { get; set; }
+}
+
+public class InvoiceCalculator
+{
+    public double CalculateTotal(Invoice invoice)
+    {
+        double subTotal = 0;
+        foreach (var item in invoice.Items)
+        {
+            subTotal += item.Price;
+        }
+        return subTotal + (subTotal * invoice.TaxRate);
+    }
+}
+
+public class InvoiceRepository
+{
+    public void SaveToDatabase(Invoice invoice)
+    {
+        // Логика для сохранения счета-фактуры в базу данных
+    }
+}
+
+//TASK 2
+//БЫЛО:
+public enum CustomerType
+{
+    Regular,
+    Silver,
+    Gold
+}
+
+//public class DiscountCalculator
+//{
+//    public double CalculateDiscount(CustomerType customerType, double amount)
+//    {
+//        if (customerType == CustomerType.Regular)
+//        {
+//            return amount;
+//        }
+//        else if (customerType == CustomerType.Silver)
+//        {
+//            return amount * 0.9; // 10% скидка
+//        }
+//        else if (customerType == CustomerType.Gold)
+//        {
+//            return amount * 0.8; // 20% скидка
+//        }
+//        else
+//        {
+//            throw new ArgumentException("Неизвестный тип клиента");
+//        }
+//    }
+//}
+
+//СТАЛО:
+public interface IDiscountStrategy
+{
+    double CalculateDiscount(double amount);
+}
+
+public class RegularDiscount : IDiscountStrategy
+{
+    public double CalculateDiscount(double amount)
+    {
+        return amount;
+    }
+}
+
+public class SilverDiscount : IDiscountStrategy
+{
+    public double CalculateDiscount(double amount)
+    {
+        return amount * 0.9; // 10% скидка
+    }
+}
+
+public class GoldDiscount : IDiscountStrategy
+{
+    public double CalculateDiscount(double amount)
+    {
+        return amount * 0.8; // 20% скидка
+    }
+}
+
+public class DiscountCalculator
+{
+    private readonly Dictionary<CustomerType, IDiscountStrategy> _discountStrategies;
+
+    public DiscountCalculator()
+    {
+        _discountStrategies = new Dictionary<CustomerType, IDiscountStrategy>
+        {
+            { CustomerType.Regular, new RegularDiscount() },
+            { CustomerType.Silver, new SilverDiscount() },
+            { CustomerType.Gold, new GoldDiscount() }
+        };
+    }
+
+    public double CalculateDiscount(CustomerType customerType, double amount)
+    {
+        if (_discountStrategies.TryGetValue(customerType, out var strategy))
+        {
+            return strategy.CalculateDiscount(amount);
+        }
+        throw new ArgumentException("Неизвестный тип клиента");
+    }
+}
+
+
+//TASK 3
+//БЫЛО:
+//public interface IWorker
+//{
+//    void Work();
+//    void Eat();
+//    void Sleep();
+//}
+
+//public class HumanWorker : IWorker
+//{
+//    public void Work()
+//    {
+//        // Логика работы
+//    }
+
+//    public void Eat()
+//    {
+//        // Логика питания
+//    }
+
+//    public void Sleep()
+//    {
+//        // Логика сна
+//    }
+//}
+
+//public class RobotWorker : IWorker
+//{
+//    public void Work()
+//    {
+//        // Логика работы
+//    }
+
+//    public void Eat()
+//    {
+//        throw new NotImplementedException();
+//    }
+
+//    public void Sleep()
+//    {
+//        throw new NotImplementedException();
+//    }
+//}
+
+
+//СТАЛО:
+public interface IWorker
+{
+    void Work();
+}
+
+public interface IHuman : IWorker
+{
+    void Eat();
+    void Sleep();
+}
+
+public class HumanWorker : IHuman
+{
+    public void Work()
+    {
+        // Логика работы
+    }
+
+    public void Eat()
+    {
+        // Логика питания
+    }
+
+    public void Sleep()
+    {
+        // Логика сна
+    }
+}
+
+public class RobotWorker : IWorker
+{
+    public void Work()
+    {
+        // Логика работы
+    }
+}
+
+
+//TASK 4
+//БЫЛО:
+//public class EmailService
+//{
+//    public void SendEmail(string message)
+//    {
+//        Console.WriteLine($"Отправка Email: {message}");
+//    }
+//}
+
+//public class Notification
+//{
+//    private EmailService _emailService;
+
+//    public Notification()
+//    {
+//        _emailService = new EmailService();
+//    }
+
+//    public void Send(string message)
+//    {
+//        _emailService.SendEmail(message);
+//    }
+//}
+
+
+//СТАЛО:
+public interface INotificationService
+{
+    void Send(string message);
+}
+
+public class EmailService : INotificationService
+{
+    public void Send(string message)
+    {
+        Console.WriteLine($"Отправка Email: {message}");
+    }
+}
+
+public class Notification
+{
+    private readonly INotificationService _notificationService;
+
+    public Notification(INotificationService notificationService)
+    {
+        _notificationService = notificationService;
+    }
+
+    public void Send(string message)
+    {
+        _notificationService.Send(message);
+    }
+}
+
