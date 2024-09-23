@@ -1,0 +1,320 @@
+//Принцип DRY (Don’t Repeat Yourself)
+//Было
+//public void LogError(string message)
+//{
+//    Console.WriteLine($"ERROR: {message}");
+//}
+
+//public void LogWarning(string message)
+//{
+//    Console.WriteLine($"WARNING: {message}");
+//}
+
+//public void LogInfo(string message)
+//{
+//    Console.WriteLine($"INFO: {message}");
+//}
+
+
+//Стало
+public enum LogLevel
+{
+    Info,
+    Warning,
+    Error
+}
+
+public class Logger
+{
+    public void Log(string message, LogLevel level)
+    {
+        Console.WriteLine($"{level.ToString().ToUpper()}: {message}");
+    }
+}
+
+
+//Было
+//public class DatabaseService
+//{
+//    public void Connect()
+//    {
+//        string connectionString = "Server=myServer;Database=myDb;User Id=myUser;Password=myPass;";
+//        // Логика подключения к базе данных
+//    }
+//}
+
+//public class LoggingService
+//{
+//    public void Log(string message)
+//    {
+//        string connectionString = "Server=myServer;Database=myDb;User Id=myUser;Password=myPass;";
+//        // Логика записи лога в базу данных
+//    }
+//}
+
+
+//Стало
+public class Configuration
+{
+    public static string ConnectionString = "Server=myServer;Database=myDb;User Id=myUser;Password=myPass;";
+}
+
+public class DatabaseService
+{
+    public void Connect()
+    {
+        string connectionString = Configuration.ConnectionString;
+        // Логика подключения к базе данных
+    }
+}
+
+public class LoggingService
+{
+    public void Log(string message)
+    {
+        string connectionString = Configuration.ConnectionString;
+        // Логика записи лога в базу данных
+    }
+}
+
+
+
+//Принцип KISS (Keep It Simple, Stupid)
+
+//Было
+
+//public void ProcessNumbers(int[] numbers)
+//{
+//    if (numbers != null)
+//    {
+//        if (numbers.Length > 0)
+//        {
+//            foreach (var number in numbers)
+//            {
+//                if (number > 0)
+//                {
+//                    Console.WriteLine(number);
+//                }
+//            }
+//        }
+//    }
+//}
+
+
+
+//Стало
+public void ProcessNumbers(int[] numbers)
+{
+    if (numbers == null || numbers.Length == 0)
+    {
+        return;
+    }
+
+    foreach (var number in numbers)
+    {
+        if (number > 0)
+        {
+            Console.WriteLine(number);
+        }
+    }
+}
+
+
+
+//Было
+//public void PrintPositiveNumbers(int[] numbers)
+//{
+//    var positiveNumbers = numbers.Where(n => n > 0).OrderBy(n => n).ToList();
+//    foreach (var number in positiveNumbers)
+//    {
+//        Console.WriteLine(number);
+//    }
+//}
+
+
+//Стало
+
+public void PrintPositiveNumbers(int[] numbers)
+{
+    Array.Sort(numbers); // Если нужна сортировка
+
+    foreach (var number in numbers)
+    {
+        if (number > 0)
+        {
+            Console.WriteLine(number);
+        }
+    }
+}
+
+
+
+//Было (Избегание избыточного использования исключений)
+
+//public int Divide(int a, int b)
+//{
+//    try
+//    {
+//        return a / b;
+//    }
+//    catch (DivideByZeroException)
+//    {
+//        return 0;
+//    }
+//}
+
+
+
+//Стало
+
+public int Divide(int a, int b)
+{
+    if (b == 0)
+    {
+        return 0; // Обработка деления на 0
+    }
+    return a / b;
+}
+
+
+
+
+//Было (Принцип YAGNI (You Ain’t Gonna Need It))
+
+//public class User
+//{
+//    public string Name { get; set; }
+//    public string Email { get; set; }
+//    public string Address { get; set; }
+
+//    public void SaveToDatabase()
+//    {
+//        // Код для сохранения пользователя в базу данных
+//    }
+
+//    public void SendEmail()
+//    {
+//        // Код для отправки электронного письма
+//    }
+
+//    public void PrintAddressLabel()
+//    {
+//        // Код для печати адресного ярлыка
+//    }
+//}
+
+
+
+
+//Стало
+
+public class User
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string Address { get; set; }
+}
+
+// Отдельные классы или сервисы для конкретных задач
+public class UserRepository
+{
+    public void SaveToDatabase(User user)
+    {
+        // Сохранение пользователя в базу данных
+    }
+}
+
+public class EmailService
+{
+    public void SendEmail(User user)
+    {
+        // Отправка email пользователю
+    }
+}
+
+
+//Было (Ненужные параметры в методе)
+
+public class FileReader
+{
+    public string ReadFile(string filePath, bool useBuffer = true, int bufferSize = 1024)
+    {
+        if (useBuffer)
+        {
+            // Чтение с буфером
+        }
+        else
+        {
+            // Чтение без буфера
+        }
+        return "file content";
+    }
+}
+
+
+
+//Стало
+
+public class FileReader
+{
+    public string ReadFile(string filePath)
+    {
+        // Логика чтения файла
+        return "file content";
+    }
+}
+
+
+//Было (Удаление ненужных методов)
+
+//public class ReportGenerator
+//{
+//    public void GeneratePdfReport()
+//    {
+//        // Генерация PDF отчета
+//    }
+
+//    public void GenerateExcelReport()
+//    {
+//        // Генерация Excel отчета
+//    }
+
+//    public void GenerateHtmlReport()
+//    {
+//        // Генерация HTML отчета
+//    }
+//}
+
+
+//Стало
+
+public enum ReportType
+{
+    Pdf,
+    Excel,
+    Html
+}
+
+public class ReportGenerator
+{
+    public void GenerateReport(ReportType reportType)
+    {
+        switch (reportType)
+        {
+            case ReportType.Pdf:
+                // Логика генерации PDF отчета
+                Console.WriteLine("Generating PDF report...");
+                break;
+            case ReportType.Excel:
+                // Логика генерации Excel отчета
+                Console.WriteLine("Generating Excel report...");
+                break;
+            case ReportType.Html:
+                // Логика генерации HTML отчета
+                Console.WriteLine("Generating HTML report...");
+                break;
+            default:
+                throw new ArgumentException("Unknown report type");
+        }
+    }
+}
