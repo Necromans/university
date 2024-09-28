@@ -1,0 +1,128 @@
+public interface Transport
+{
+    void Move();
+    void FuelUp();
+}
+
+public class Car : Transport
+{
+    public void Move()
+    {
+        Console.WriteLine("Автомобиль движется по дороге.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine("Заправляем автомобиль бензином.");
+    }
+}
+
+public class Motorcycle : Transport
+{
+    public void Move()
+    {
+        Console.WriteLine("Мотоцикл движется по дороге.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine("Заправляем мотоцикл бензином.");
+    }
+}
+
+public class Plane : Transport
+{
+    public void Move()
+    {
+        Console.WriteLine("Самолет летит в небе.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine("Заправляем самолет авиационным топливом.");
+    }
+}
+
+public class Bicycle : Transport
+{
+    public void Move()
+    {
+        Console.WriteLine("Велосипед движется по дороге.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine("Велосипед не требует топлива.");
+    }
+}
+
+public class BicycleFactory : TransportFactory
+{
+    public override Transport CreateTransport()
+    {
+        return new Bicycle();
+    }
+}
+
+
+public abstract class TransportFactory
+{
+    public abstract Transport CreateTransport();
+}
+
+
+public class CarFactory : TransportFactory
+{
+    public override Transport CreateTransport()
+    {
+        return new Car();
+    }
+}
+
+public class MotorcycleFactory : TransportFactory
+{
+    public override Transport CreateTransport()
+    {
+        return new Motorcycle();
+    }
+}
+
+public class PlaneFactory : TransportFactory
+{
+    public override Transport CreateTransport()
+    {
+        return new Plane();
+    }
+}
+
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Введите тип транспортного средства (Car, Motorcycle, Plane): ");
+        string transportType = Console.ReadLine();
+
+        TransportFactory factory = null;
+
+        switch (transportType)
+        {
+            case "Car":
+                factory = new CarFactory();
+                break;
+            case "Motorcycle":
+                factory = new MotorcycleFactory();
+                break;
+            case "Plane":
+                factory = new PlaneFactory();
+                break;
+            default:
+                Console.WriteLine("Неверный тип транспортного средства.");
+                return;
+        }
+
+        Transport transport = factory.CreateTransport();
+        transport.Move();
+        transport.FuelUp();
+    }
+}
