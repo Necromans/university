@@ -1,0 +1,112 @@
+public interface IDocument
+{
+    void Open(); // Метод для открытия документа
+}
+
+
+public class Report : IDocument
+{
+    public void Open()
+    {
+        Console.WriteLine("Открытие отчета.");
+    }
+}
+
+public class Resume : IDocument
+{
+    public void Open()
+    {
+        Console.WriteLine("Открытие резюме.");
+    }
+}
+
+public class Letter : IDocument
+{
+    public void Open()
+    {
+        Console.WriteLine("Открытие письма.");
+    }
+}
+
+// Новый тип документа: Invoice
+public class Invoice : IDocument
+{
+    public void Open()
+    {
+        Console.WriteLine("Открытие счета-фактуры.");
+    }
+}
+
+
+public abstract class DocumentCreator
+{
+    public abstract IDocument CreateDocument(); // Абстрактный метод для создания документа
+}
+
+
+public class ReportCreator : DocumentCreator
+{
+    public override IDocument CreateDocument()
+    {
+        return new Report();
+    }
+}
+
+public class ResumeCreator : DocumentCreator
+{
+    public override IDocument CreateDocument()
+    {
+        return new Resume();
+    }
+}
+
+public class LetterCreator : DocumentCreator
+{
+    public override IDocument CreateDocument()
+    {
+        return new Letter();
+    }
+}
+
+// Фабрика для счета-фактуры
+public class InvoiceCreator : DocumentCreator
+{
+    public override IDocument CreateDocument()
+    {
+        return new Invoice();
+    }
+}
+
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Выберите тип документа (Report, Resume, Letter, Invoice):");
+        string documentType = Console.ReadLine();
+
+        DocumentCreator creator = null;
+
+        switch (documentType.ToLower())
+        {
+            case "report":
+                creator = new ReportCreator();
+                break;
+            case "resume":
+                creator = new ResumeCreator();
+                break;
+            case "letter":
+                creator = new LetterCreator();
+                break;
+            case "invoice":
+                creator = new InvoiceCreator();
+                break;
+            default:
+                Console.WriteLine("Неизвестный тип документа.");
+                return;
+        }
+
+        IDocument document = creator.CreateDocument();
+        document.Open(); // Открытие документа
+    }
+}
