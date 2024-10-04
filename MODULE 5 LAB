@@ -1,0 +1,176 @@
+public interface ITransport
+{
+    void Move(); // Метод для отображения движения транспортного средства
+    void FuelUp(); // Метод для заправки топливом
+}
+
+public class Car : ITransport
+{
+    public string Model { get; set; } // Модель автомобиля
+    public int Speed { get; set; } // Скорость автомобиля
+
+    public Car(string model, int speed)
+    {
+        Model = model;
+        Speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Автомобиль {Model} движется со скоростью {Speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Заправка автомобиля {Model}.");
+    }
+}
+
+public class Motorcycle : ITransport
+{
+    public string Model { get; set; } // Модель мотоцикла
+    public int Speed { get; set; } // Скорость мотоцикла
+
+    public Motorcycle(string model, int speed)
+    {
+        Model = model;
+        Speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Мотоцикл {Model} движется со скоростью {Speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Заправка мотоцикла {Model}.");
+    }
+}
+
+public class Plane : ITransport
+{
+    public string Model { get; set; } // Модель самолета
+    public int Speed { get; set; } // Скорость самолета
+
+    public Plane(string model, int speed)
+    {
+        Model = model;
+        Speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Самолет {Model} летит со скоростью {Speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Заправка самолета {Model}.");
+    }
+}
+
+// Новый тип транспортного средства: Велосипед
+public class Bicycle : ITransport
+{
+    public string Model { get; set; } // Модель велосипеда
+    public int Speed { get; set; } // Скорость велосипеда
+
+    public Bicycle(string model, int speed)
+    {
+        Model = model;
+        Speed = speed;
+    }
+
+    public void Move()
+    {
+        Console.WriteLine($"Велосипед {Model} движется со скоростью {Speed} км/ч.");
+    }
+
+    public void FuelUp()
+    {
+        Console.WriteLine($"Велосипед {Model} не требует заправки.");
+    }
+}
+
+
+public abstract class TransportFactory
+{
+    public abstract ITransport CreateTransport(string model, int speed); // Метод для создания транспорта
+}
+
+
+public class CarFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Car(model, speed);
+    }
+}
+
+public class MotorcycleFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Motorcycle(model, speed);
+    }
+}
+
+public class PlaneFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Plane(model, speed);
+    }
+}
+
+// Фабрика для велосипеда
+public class BicycleFactory : TransportFactory
+{
+    public override ITransport CreateTransport(string model, int speed)
+    {
+        return new Bicycle(model, speed);
+    }
+}
+
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Выберите тип транспорта (Car, Motorcycle, Plane, Bicycle):");
+        string transportType = Console.ReadLine();
+
+        Console.WriteLine("Введите модель:");
+        string model = Console.ReadLine();
+
+        Console.WriteLine("Введите скорость (км/ч):");
+        int speed = int.Parse(Console.ReadLine());
+
+        TransportFactory factory = null;
+
+        switch (transportType.ToLower())
+        {
+            case "car":
+                factory = new CarFactory();
+                break;
+            case "motorcycle":
+                factory = new MotorcycleFactory();
+                break;
+            case "plane":
+                factory = new PlaneFactory();
+                break;
+            case "bicycle":
+                factory = new BicycleFactory();
+                break;
+            default:
+                Console.WriteLine("Неизвестный тип транспорта.");
+                return;
+        }
+
+        ITransport transport = factory.CreateTransport(model, speed);
+        transport.Move();
+        transport.FuelUp();
+    }
+}
+
