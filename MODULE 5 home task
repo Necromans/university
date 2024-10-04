@@ -1,0 +1,278 @@
+using System;
+
+// Интерфейс для всех транспортных средств
+public interface IVehicle
+{
+    void Drive(); // Метод для движения
+    void Refuel(); // Метод для заправки
+}
+
+// Класс для автомобиля
+public class Car : IVehicle
+{
+    public string Make { get; set; } // Марка
+    public string Model { get; set; } // Модель
+    public string FuelType { get; set; } // Тип топлива
+
+    public Car(string make, string model, string fuelType)
+    {
+        Make = make;
+        Model = model;
+        FuelType = fuelType;
+    }
+
+    public void Drive()
+    {
+        Console.WriteLine($"Еду на автомобиле {Make} {Model}.");
+    }
+
+    public void Refuel()
+    {
+        Console.WriteLine($"Заправляю {Make} {Model} {FuelType}.");
+    }
+}
+
+// Класс для мотоцикла
+public class Motorcycle : IVehicle
+{
+    public string Type { get; set; } // Тип мотоцикла
+    public double EngineCapacity { get; set; } // Объем двигателя
+
+    public Motorcycle(string type, double engineCapacity)
+    {
+        Type = type;
+        EngineCapacity = engineCapacity;
+    }
+
+    public void Drive()
+    {
+        Console.WriteLine($"Еду на мотоцикле типа {Type} с объемом двигателя {EngineCapacity}L.");
+    }
+
+    public void Refuel()
+    {
+        Console.WriteLine($"Заправляю {Type} мотоцикл.");
+    }
+}
+
+// Класс для грузовика
+public class Truck : IVehicle
+{
+    public double LoadCapacity { get; set; } // Грузоподъемность
+    public int Axles { get; set; } // Количество осей
+
+    public Truck(double loadCapacity, int axles)
+    {
+        LoadCapacity = loadCapacity;
+        Axles = axles;
+    }
+
+    public void Drive()
+    {
+        Console.WriteLine($"Еду на грузовике с грузоподъемностью {LoadCapacity} тонн и {Axles} осями.");
+    }
+
+    public void Refuel()
+    {
+        Console.WriteLine("Заправляю грузовик.");
+    }
+}
+
+// Абстрактный класс для фабрик транспортных средств
+public abstract class VehicleFactory
+{
+    public abstract IVehicle CreateVehicle(); // Фабричный метод для создания транспорта
+}
+
+// Фабрика для автомобилей
+public class CarFactory : VehicleFactory
+{
+    private string make;
+    private string model;
+    private string fuelType;
+
+    public CarFactory(string make, string model, string fuelType)
+    {
+        this.make = make;
+        this.model = model;
+        this.fuelType = fuelType;
+    }
+
+    public override IVehicle CreateVehicle()
+    {
+        return new Car(make, model, fuelType);
+    }
+}
+
+// Фабрика для мотоциклов
+public class MotorcycleFactory : VehicleFactory
+{
+    private string type;
+    private double engineCapacity;
+
+    public MotorcycleFactory(string type, double engineCapacity)
+    {
+        this.type = type;
+        this.engineCapacity = engineCapacity;
+    }
+
+    public override IVehicle CreateVehicle()
+    {
+        return new Motorcycle(type, engineCapacity);
+    }
+}
+
+// Фабрика для грузовиков
+public class TruckFactory : VehicleFactory
+{
+    private double loadCapacity;
+    private int axles;
+
+    public TruckFactory(double loadCapacity, int axles)
+    {
+        this.loadCapacity = loadCapacity;
+        this.axles = axles;
+    }
+
+    public override IVehicle CreateVehicle()
+    {
+        return new Truck(loadCapacity, axles);
+    }
+}
+
+// Класс для автобуса
+public class Bus : IVehicle
+{
+    public int PassengerCapacity { get; set; } // Вместимость пассажиров
+
+    public Bus(int passengerCapacity)
+    {
+        PassengerCapacity = passengerCapacity;
+    }
+
+    public void Drive()
+    {
+        Console.WriteLine($"Еду на автобусе с вместимостью {PassengerCapacity} пассажиров.");
+    }
+
+    public void Refuel()
+    {
+        Console.WriteLine("Заправляю автобус.");
+    }
+}
+
+// Фабрика для автобусов
+public class BusFactory : VehicleFactory
+{
+    private int passengerCapacity;
+
+    public BusFactory(int passengerCapacity)
+    {
+        this.passengerCapacity = passengerCapacity;
+    }
+
+    public override IVehicle CreateVehicle()
+    {
+        return new Bus(passengerCapacity);
+    }
+}
+
+// Класс для электросамоката
+public class ElectricScooter : IVehicle
+{
+    public int BatteryCapacity { get; set; } // Вместимость аккумулятора
+
+    public ElectricScooter(int batteryCapacity)
+    {
+        BatteryCapacity = batteryCapacity;
+    }
+
+    public void Drive()
+    {
+        Console.WriteLine($"Еду на электросамокате с вместимостью аккумулятора {BatteryCapacity}Wh.");
+    }
+
+    public void Refuel()
+    {
+        Console.WriteLine("Заряжаю электросамокат.");
+    }
+}
+
+// Фабрика для электросамокатов
+public class ElectricScooterFactory : VehicleFactory
+{
+    private int batteryCapacity;
+
+    public ElectricScooterFactory(int batteryCapacity)
+    {
+        this.batteryCapacity = batteryCapacity;
+    }
+
+    public override IVehicle CreateVehicle()
+    {
+        return new ElectricScooter(batteryCapacity);
+    }
+}
+
+// Главный класс программы
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Выберите тип транспорта (Car, Motorcycle, Truck, Bus, Electric scooter):");
+        string vehicleType = Console.ReadLine();
+
+        IVehicle vehicle = null;
+        switch (vehicleType.ToLower())
+        {
+            case "car":
+                Console.WriteLine("Введите марку:");
+                string make = Console.ReadLine();
+                Console.WriteLine("Введите модель:");
+                string model = Console.ReadLine();
+                Console.WriteLine("Введите тип топлива:");
+                string fuelType = Console.ReadLine();
+
+                vehicle = new CarFactory(make, model, fuelType).CreateVehicle();
+                break;
+
+            case "motorcycle":
+                Console.WriteLine("Введите тип мотоцикла (sport/tour):");
+                string motorcycleType = Console.ReadLine();
+                Console.WriteLine("Введите объем двигателя:");
+                double engineCapacity = double.Parse(Console.ReadLine());
+
+                vehicle = new MotorcycleFactory(motorcycleType, engineCapacity).CreateVehicle();
+                break;
+
+            case "truck":
+                Console.WriteLine("Введите грузоподъемность:");
+                double loadCapacity = double.Parse(Console.ReadLine());
+                Console.WriteLine("Введите количество осей:");
+                int axles = int.Parse(Console.ReadLine());
+
+                vehicle = new TruckFactory(loadCapacity, axles).CreateVehicle();
+                break;
+
+            case "bus":
+                Console.WriteLine("Введите вместимость пассажиров:");
+                int passengerCapacity = int.Parse(Console.ReadLine());
+
+                vehicle = new BusFactory(passengerCapacity).CreateVehicle();
+                break;
+            case "electric scooter":
+                Console.WriteLine("Введите вместимость аккумулятора (в Wh):");
+                int batteryCapacity = int.Parse(Console.ReadLine());
+
+                vehicle = new ElectricScooterFactory(batteryCapacity).CreateVehicle();
+                break;
+
+            default:
+                Console.WriteLine("Неизвестный тип транспорта.");
+                return;
+        }
+
+        vehicle.Drive();
+        vehicle.Refuel();
+    }
+}
