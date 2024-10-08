@@ -1,0 +1,127 @@
+using System;
+using System.IO;
+using System.Threading;
+
+public enum LogLevel
+{
+    INFO,
+    WARNING,
+    ERROR
+}
+
+public sealed class Logger
+{
+    private static readonly Lazy<Logger> _instance = new Lazy<Logger>(() => new Logger());
+    private readonly object _lock = new object();
+    private LogLevel _currentLogLevel = LogLevel.INFO;
+    private string _logFilePath = "logs.txt";
+
+    // Приватный конструктор предотвращает создание экземпляров извне
+    private Logger()
+    {
+        // Инициализация лог-файла
+        using (var writer = new StreamWriter(_logFilePath, true))
+        {
+            writer.WriteLine($"[{DateTime.Now}] Logger инициализируется.");
+        }
+    }
+
+    // Статический метод для получения единственного экземпляра
+    public static Logger GetInstance()
+    {
+        return _instance.Value;
+    }
+
+    // Метод для установки уровня логирования
+    public void SetLogLevel(LogLevel level)
+    {
+        lock (_lock)
+        {
+            _currentLogLevel = level;
+            Log($"Log level set to {level}", LogLevel.INFO);
+        }
+    }
+
+    // Метод для изменения пути к лог-файлу
+    public void SetLogFilePath(string path)
+    {
+        lock (_lock) //гарантирует что выполняется лишь один поток
+        {
+            _logFilePath = path;
+            Log($"Путь файла логирования измненан на {path}", LogLevel.INFO);
+        }
+    }
+
+    // Метод для записи логов
+    public void Log(string message, LogLevel level)
+    {
+        if (level < _currentLogLevel)
+            return;
+
+        lock (_lock)
+        {
+            using (var writer = new StreamWriter(_logFilePath, true))
+            {
+                writer.WriteLine($"[{DateTime.Now}] [{level}] {message}");
+            }
+        }
+    }
+
+    // Метод для чтения логов из файла и отображения на экране
+    public void ReadLogs()
+    {
+        lock (_lock)
+        {
+            if (File.Exists(_logFilePath))
+            {
+                string logs = File.ReadAllText(_logFilePath);
+                Console.WriteLine("===== Логи =====");
+                Console.WriteLine(logs);
+                Console.WriteLine("================");
+            }
+            else
+            {
+                Console.WriteLine("Лог-файл не найден.");
+            }
+        }
+    }
+}
+
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        Logger logger = Logger.GetInstance();
+
+        // Установка начального уровня логирования
+        logger.SetLogLevel(LogLevel.INFO);
+
+        // Создание и запуск нескольких потоков
+        Thread thread1 = new Thread(() => LogMessages("Thread1", LogLevel.INFO));
+        Thread thread2 = new Thread(() => LogMessages("Thread2", LogLevel.WARNING));
+        Thread thread3 = new Thread(() => LogMessages("Thread3", LogLevel.ERROR));
+
+        thread1.Start();
+        thread2.Start();
+        thread3.Start();
+
+        // Ожидание завершения потоков
+        thread1.Join();
+        thread2.Join();
+        thread3.Join();
+
+        // Чтение логов
+        logger.ReadLogs();
+    }
+
+    static void LogMessages(string threadName, LogLevel level)
+    {
+        Logger logger = Logger.GetInstance();
+        for (int i = 0; i < 5; i++)
+        {
+            logger.Log($"{threadName} - Сообщение {i + 1}", level);
+            Thread.Sleep(100); // Имитация работы
+        }
+    }
+}
