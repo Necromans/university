@@ -1,0 +1,163 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс для клонирования
+public interface ICloneable
+{
+    object Clone();
+}
+
+// Класс Skill (Способность)
+public class Skill : ICloneable
+{
+    public string Name { get; set; }
+    public int Power { get; set; }
+
+    public Skill(string name, int power)
+    {
+        Name = name;
+        Power = power;
+    }
+
+    // Метод для глубокого клонирования
+    public object Clone()
+    {
+        return new Skill(Name, Power);
+    }
+
+    public override string ToString()
+    {
+        return $"Skill: {Name}, Power: {Power}";
+    }
+}
+
+// Класс Weapon (Оружие)
+public class Weapon : ICloneable
+{
+    public string Name { get; set; }
+    public int Damage { get; set; }
+
+    public Weapon(string name, int damage)
+    {
+        Name = name;
+        Damage = damage;
+    }
+
+    // Метод для глубокого клонирования
+    public object Clone()
+    {
+        return new Weapon(Name, Damage);
+    }
+
+    public override string ToString()
+    {
+        return $"Weapon: {Name}, Damage: {Damage}";
+    }
+}
+
+// Класс Armor (Броня)
+public class Armor : ICloneable
+{
+    public string Name { get; set; }
+    public int Defense { get; set; }
+
+    public Armor(string name, int defense)
+    {
+        Name = name;
+        Defense = defense;
+    }
+
+    // Метод для глубокого клонирования
+    public object Clone()
+    {
+        return new Armor(Name, Defense);
+    }
+
+    public override string ToString()
+    {
+        return $"Armor: {Name}, Defense: {Defense}";
+    }
+}
+
+// Класс Character (Персонаж)
+public class Character : ICloneable
+{
+    public string Name { get; set; }
+    public int Health { get; set; }
+    public int Strength { get; set; }
+    public int Agility { get; set; }
+    public int Intelligence { get; set; }
+
+    public Weapon Weapon { get; set; }
+    public Armor Armor { get; set; }
+    public List<Skill> Skills { get; set; }
+
+    public Character(string name, int health, int strength, int agility, int intelligence, Weapon weapon, Armor armor, List<Skill> skills)
+    {
+        Name = name;
+        Health = health;
+        Strength = strength;
+        Agility = agility;
+        Intelligence = intelligence;
+        Weapon = weapon;
+        Armor = armor;
+        Skills = skills;
+    }
+
+    // Метод для глубокого клонирования
+    public object Clone()
+    {
+        var clonedWeapon = (Weapon)Weapon.Clone();
+        var clonedArmor = (Armor)Armor.Clone();
+        var clonedSkills = new List<Skill>();
+
+        foreach (var skill in Skills)
+        {
+            clonedSkills.Add((Skill)skill.Clone());
+        }
+
+        return new Character(Name, Health, Strength, Agility, Intelligence, clonedWeapon, clonedArmor, clonedSkills);
+    }
+
+    public override string ToString()
+    {
+        string skillsDescription = string.Join(", ", Skills);
+        return $"Character: {Name}, Health: {Health}, Strength: {Strength}, Agility: {Agility}, Intelligence: {Intelligence}, " +
+               $"Weapon: [{Weapon}], Armor: [{Armor}], Skills: [{skillsDescription}]";
+    }
+}
+
+// Пример использования
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создание оригинального персонажа
+        var originalWeapon = new Weapon("Sword", 25);
+        var originalArmor = new Armor("Plate Armor", 15);
+        var originalSkills = new List<Skill>
+        {
+            new Skill("Fireball", 30),
+            new Skill("Heal", 20)
+        };
+
+        var originalCharacter = new Character("Warrior", 100, 20, 15, 10, originalWeapon, originalArmor, originalSkills);
+
+        Console.WriteLine("Оригинальный персонаж:");
+        Console.WriteLine(originalCharacter);
+
+        // Клонирование персонажа
+        var clonedCharacter = (Character)originalCharacter.Clone();
+
+        // Изменение клонированного персонажа
+        clonedCharacter.Name = "Cloned Warrior";
+        clonedCharacter.Health = 90;
+        clonedCharacter.Skills[0].Power = 35; // Изменение способности
+
+        Console.WriteLine("\nКлонированный персонаж:");
+        Console.WriteLine(clonedCharacter);
+
+        Console.WriteLine("\nОригинальный персонаж после клонирования:");
+        Console.WriteLine(originalCharacter);
+    }
+}
