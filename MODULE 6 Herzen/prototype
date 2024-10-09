@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс для клонирования объектов
+public interface ICloneable
+{
+    object Clone();
+}
+
+// Класс продукта
+public class Product : ICloneable
+{
+    public string Name { get; set; }
+    public int Price { get; set; }
+
+    public object Clone()
+    {
+        return new Product { Name = this.Name, Price = this.Price };
+    }
+
+    public override string ToString()
+    {
+        return $"{Name} - {Price}";
+    }
+}
+
+// Класс скидки
+public class Discount : ICloneable
+{
+    public string Description { get; set; }
+    public int Amount { get; set; }
+
+    public object Clone()
+    {
+        return new Discount { Description = this.Description, Amount = this.Amount };
+    }
+
+    public override string ToString()
+    {
+        return $"{Description}: {Amount}";
+    }
+}
+
+// Класс заказа
+public class Order : ICloneable
+{
+    public List<Product> Products { get; set; } = new List<Product>();
+    public int ShippingCost { get; set; }
+    public List<Discount> Discounts { get; set; } = new List<Discount>();
+    public string PaymentMethod { get; set; }
+
+    public object Clone()
+    {
+        var clonedOrder = new Order
+        {
+            ShippingCost = this.ShippingCost,
+            PaymentMethod = this.PaymentMethod
+        };
+
+        foreach (var product in Products)
+        {
+            clonedOrder.Products.Add((Product)product.Clone());
+        }
+
+        foreach (var discount in Discounts)
+        {
+            clonedOrder.Discounts.Add((Discount)discount.Clone());
+        }
+
+        return clonedOrder;
+    }
+
+    public override string ToString()
+    {
+        string orderDetails = "Заказ:\n";
+        foreach (var product in Products)
+        {
+            orderDetails += $"- {product}\n";
+        }
+        orderDetails += $"Доставка: {ShippingCost}\n";
+        foreach (var discount in Discounts)
+        {
+            orderDetails += $"- Скидка: {discount}\n";
+        }
+        orderDetails += $"Способ оплаты: {PaymentMethod}\n";
+
+        return orderDetails;
+    }
+}
+
+// Программа для тестирования
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создаем оригинальный заказ
+        var originalOrder = new Order
+        {
+            ShippingCost = 10,
+            PaymentMethod = "Кредитная карта"
+        };
+        originalOrder.Products.Add(new Product { Name = "Товар 1", Price = 100 });
+        originalOrder.Products.Add(new Product { Name = "Товар 2", Price = 50 });
+        originalOrder.Discounts.Add(new Discount { Description = "Скидка 10%", Amount = 10 });
+
+        // Клонируем заказ
+        var clonedOrder = (Order)originalOrder.Clone();
+        clonedOrder.Products[0].Price = 90; // Изменяем цену в клонированном заказе
+
+        // Выводим оригинальный и клонированный заказы
+        Console.WriteLine("Оригинальный заказ:");
+        Console.WriteLine(originalOrder);
+        Console.WriteLine("Клонированный заказ:");
+        Console.WriteLine(clonedOrder);
+    }
+}
