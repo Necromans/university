@@ -1,0 +1,145 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+// Класс для управления настройками приложения
+public sealed class ConfigurationManager
+{
+    private static ConfigurationManager _instance;
+    private static readonly object _lock = new object();
+    private Dictionary<string, string> _settings;
+
+    // Приватный конструктор
+    private ConfigurationManager()
+    {
+        _settings = new Dictionary<string, string>();
+        LoadSettings();
+    }
+
+    // Ленивое создание экземпляра с поддержкой потокобезопасности
+    public static ConfigurationManager GetInstance()
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new ConfigurationManager();
+                }
+            }
+        }
+        return _instance;
+    }
+
+    // Загрузка настроек из файла
+    private void LoadSettings()
+    {
+        try
+        {
+            if (File.Exists("config.txt"))
+            {
+                var lines = File.ReadAllLines("config.txt");
+                foreach (var line in lines)
+                {
+                    var parts = line.Split('=');
+                    if (parts.Length == 2)
+                    {
+                        _settings[parts[0]] = parts[1];
+                    }
+                    else
+                    {
+                        throw new InvalidDataException("Некорректный формат строки в файле настроек");
+                    }
+                }
+            }
+            else
+            {
+                throw new FileNotFoundException("Файл настроек не найден");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка при загрузке настроек: " + ex.Message);
+        }
+    }
+
+    // Получение значения настройки
+    public string GetSetting(string key)
+    {
+        try
+        {
+            if (_settings.ContainsKey(key))
+            {
+                return _settings[key];
+            }
+            else
+            {
+                throw new KeyNotFoundException($"Настройка с ключом '{key}' не найдена");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка при получении настройки: " + ex.Message);
+            return null;
+        }
+    }
+
+    // Изменение или добавление новой настройки
+    public void SetSetting(string key, string value)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("Ключ и значение настройки не могут быть пустыми");
+            }
+
+            _settings[key] = value;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка при установке настройки: " + ex.Message);
+        }
+    }
+
+    // Сохранение настроек в файл
+    public void SaveSettings()
+    {
+        try
+        {
+            using (var writer = new StreamWriter("config.txt"))
+            {
+                foreach (var setting in _settings)
+                {
+                    writer.WriteLine($"{setting.Key}={setting.Value}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка при сохранении настроек: " + ex.Message);
+        }
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        // Получаем единственный экземпляр ConfigurationManager
+        var config = ConfigurationManager.GetInstance();
+
+        // Чтение и изменение настроек
+        Console.WriteLine("Получение настроек: " + config.GetSetting("theme"));
+        config.SetSetting("theme", "dark");
+        config.SaveSettings();
+
+        // Проверка на исключение при отсутствии настройки
+        Console.WriteLine("Отсутсвует такой параметр настроек: " + config.GetSetting("non_existing_key"));
+
+        // Проверка, что всегда возвращается один и тот же экземпляр
+        var anotherConfig = ConfigurationManager.GetInstance();
+        Console.WriteLine("Новые настройки: " + anotherConfig.GetSetting("theme"));
+    }
+}
