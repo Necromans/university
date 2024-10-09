@@ -1,0 +1,189 @@
+using System;
+
+public class Report
+{
+    public string Header { get; set; }
+    public string Content { get; set; }
+    public string Footer { get; set; }
+    public string Style { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Style}\n{Header}\n{Content}\n{Footer}";
+    }
+}
+
+public interface IReportBuilder
+{
+    IReportBuilder SetHeader(string header);
+    IReportBuilder SetContent(string content);
+    IReportBuilder SetFooter(string footer);
+    IReportBuilder SetStyle(string style); // Поддержка стилей
+    Report GetReport();
+}
+
+public class TextReportBuilder : IReportBuilder
+{
+    private Report _report = new Report();
+
+    public IReportBuilder SetHeader(string header)
+    {
+        _report.Header = $"[Текстовый заголовок]: {header}";
+        return this;
+    }
+
+    public IReportBuilder SetContent(string content)
+    {
+        _report.Content = $"[Текстовое содержимое]: {content}";
+        return this;
+    }
+
+    public IReportBuilder SetFooter(string footer)
+    {
+        _report.Footer = $"[Текстовый подвал]: {footer}";
+        return this;
+    }
+
+    public IReportBuilder SetStyle(string style)
+    {
+        _report.Style = $"[Текстовый стиль]: {style}";
+        return this;
+    }
+
+    public Report GetReport()
+    {
+        return _report;
+    }
+}
+
+public class HtmlReportBuilder : IReportBuilder
+{
+    private Report _report = new Report();
+
+    public IReportBuilder SetHeader(string header)
+    {
+        _report.Header = $"<h1>{header}</h1>";
+        return this;
+    }
+
+    public IReportBuilder SetContent(string content)
+    {
+        _report.Content = $"<p>{content}</p>";
+        return this;
+    }
+
+    public IReportBuilder SetFooter(string footer)
+    {
+        _report.Footer = $"<footer>{footer}</footer>";
+        return this;
+    }
+
+    public IReportBuilder SetStyle(string style)
+    {
+        _report.Style = $"<style>{style}</style>";
+        return this;
+    }
+
+    public Report GetReport()
+    {
+        return _report;
+    }
+}
+
+// Дополнительный формат отчета — XML
+public class XmlReportBuilder : IReportBuilder
+{
+    private Report _report = new Report();
+
+    public IReportBuilder SetHeader(string header)
+    {
+        _report.Header = $"<header>{header}</header>";
+        return this;
+    }
+
+    public IReportBuilder SetContent(string content)
+    {
+        _report.Content = $"<content>{content}</content>";
+        return this;
+    }
+
+    public IReportBuilder SetFooter(string footer)
+    {
+        _report.Footer = $"<footer>{footer}</footer>";
+        return this;
+    }
+
+    public IReportBuilder SetStyle(string style)
+    {
+        _report.Style = $"<button {style} Content='Start'></button>";
+        return this;
+    }
+
+    public Report GetReport()
+    {
+        return _report;
+    }
+}
+
+// Директор для управления процессом сборки
+public class ReportDirector
+{
+    private IReportBuilder _builder;
+
+    public ReportDirector(IReportBuilder builder)
+    {
+        _builder = builder;
+    }
+
+    public void ConstructReport(string header, string content, string footer, string style = null)
+    {
+        _builder.SetHeader(header)
+                .SetContent(content)
+                .SetFooter(footer);
+
+        if (style != null)
+        {
+            _builder.SetStyle(style);
+        }
+    }
+
+    public Report GetReport()
+    {
+        return _builder.GetReport();
+    }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создаем текстовый отчет
+        IReportBuilder textBuilder = new TextReportBuilder();
+        ReportDirector director = new ReportDirector(textBuilder);
+        director.ConstructReport("Заголовок", "Содержимое отчета", "Подвал отчета", "bold");
+        Report textReport = director.GetReport();
+        Console.WriteLine("Текстовый Отчет:");
+        Console.WriteLine(textReport);
+
+        // Создаем HTML отчет
+        IReportBuilder htmlBuilder = new HtmlReportBuilder();
+        director = new ReportDirector(htmlBuilder);
+        director.ConstructReport("HTML Заголовок", "HTML Содержимое", "HTML Подвал", "body {color: red;}");
+        Report htmlReport = director.GetReport();
+        Console.WriteLine("\nHTML Отчет:");
+        Console.WriteLine(htmlReport);
+
+        // Создаем XML отчет
+        IReportBuilder xmlBuilder = new XmlReportBuilder();
+        director = new ReportDirector(xmlBuilder);
+        director.ConstructReport("XML Заголовок", "XML Содержимое", "XML Подвал", "color: blue;");
+        Report xmlReport = director.GetReport();
+        Console.WriteLine("\nXML Отчет:");
+        Console.WriteLine(xmlReport);
+
+        // Динамическое изменение содержимого
+        textReport.Content = "Измененное содержимое текстового отчета";
+        Console.WriteLine("\nИзмененный Текстовый Отчет:");
+        Console.WriteLine(textReport);
+    }
+}
