@@ -1,0 +1,315 @@
+using System;
+using System.Collections.Generic;
+
+// 1. Интерфейс ICommand
+public interface ICommand
+{
+    void Execute();
+    void Undo(); // Метод для отмены команды
+}
+
+// 2. Классы устройств
+public class Light
+{
+    public void On()
+    {
+        Console.WriteLine("Свет включен.");
+    }
+
+    public void Off()
+    {
+        Console.WriteLine("Свет выключен.");
+    }
+}
+
+public class Television
+{
+    public void On()
+    {
+        Console.WriteLine("Телевизор включен.");
+    }
+
+    public void Off()
+    {
+        Console.WriteLine("Телевизор выключен.");
+    }
+}
+
+public class AirConditioner
+{
+    public void On()
+    {
+        Console.WriteLine("Кондиционер включен.");
+    }
+
+    public void Off()
+    {
+        Console.WriteLine("Кондиционер выключен.");
+    }
+
+    public void EnergySavingMode()
+    {
+        Console.WriteLine("Кондиционер в режиме экономии энергии.");
+    }
+}
+
+// 3. Команды для управления устройствами
+public class LightOnCommand : ICommand
+{
+    private Light _light;
+
+    public LightOnCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute()
+    {
+        _light.On();
+        Logger.Log("Свет включен.");
+    }
+
+    public void Undo()
+    {
+        _light.Off();
+        Logger.Log("Свет выключен (отмена).");
+    }
+}
+
+public class LightOffCommand : ICommand
+{
+    private Light _light;
+
+    public LightOffCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute()
+    {
+        _light.Off();
+        Logger.Log("Свет выключен.");
+    }
+
+    public void Undo()
+    {
+        _light.On();
+        Logger.Log("Свет включен (отмена).");
+    }
+}
+
+public class TelevisionOnCommand : ICommand
+{
+    private Television _television;
+
+    public TelevisionOnCommand(Television television)
+    {
+        _television = television;
+    }
+
+    public void Execute()
+    {
+        _television.On();
+        Logger.Log("Телевизор включен.");
+    }
+
+    public void Undo()
+    {
+        _television.Off();
+        Logger.Log("Телевизор выключен (отмена).");
+    }
+}
+
+public class TelevisionOffCommand : ICommand
+{
+    private Television _television;
+
+    public TelevisionOffCommand(Television television)
+    {
+        _television = television;
+    }
+
+    public void Execute()
+    {
+        _television.Off();
+        Logger.Log("Телевизор выключен.");
+    }
+
+    public void Undo()
+    {
+        _television.On();
+        Logger.Log("Телевизор включен (отмена).");
+    }
+}
+
+public class AirConditionerOnCommand : ICommand
+{
+    private AirConditioner _airConditioner;
+
+    public AirConditionerOnCommand(AirConditioner airConditioner)
+    {
+        _airConditioner = airConditioner;
+    }
+
+    public void Execute()
+    {
+        _airConditioner.On();
+        Logger.Log("Кондиционер включен.");
+    }
+
+    public void Undo()
+    {
+        _airConditioner.Off();
+        Logger.Log("Кондиционер выключен (отмена).");
+    }
+}
+
+public class AirConditionerOffCommand : ICommand
+{
+    private AirConditioner _airConditioner;
+
+    public AirConditionerOffCommand(AirConditioner airConditioner)
+    {
+        _airConditioner = airConditioner;
+    }
+
+    public void Execute()
+    {
+        _airConditioner.Off();
+        Logger.Log("Кондиционер выключен.");
+    }
+
+    public void Undo()
+    {
+        _airConditioner.On();
+        Logger.Log("Кондиционер включен (отмена).");
+    }
+}
+
+// 4. Класс пульта дистанционного управления
+public class RemoteControl
+{
+    private ICommand _onCommand;
+    private ICommand _offCommand;
+
+    public void SetCommands(ICommand onCommand, ICommand offCommand)
+    {
+        _onCommand = onCommand;
+        _offCommand = offCommand;
+    }
+
+    public void PressOnButton()
+    {
+        if (_onCommand != null)
+            _onCommand.Execute();
+        else
+            Console.WriteLine("Ошибка: команда включения не назначена.");
+    }
+
+    public void PressOffButton()
+    {
+        if (_offCommand != null)
+            _offCommand.Execute();
+        else
+            Console.WriteLine("Ошибка: команда выключения не назначена.");
+    }
+
+    public void PressUndoButton()
+    {
+        if (_onCommand != null)
+            _onCommand.Undo();
+        else
+            Console.WriteLine("Ошибка: команда отмены не назначена.");
+    }
+}
+
+// 5. Макрокоманда для выполнения нескольких команд подряд
+public class MacroCommand : ICommand
+{
+    private List<ICommand> _commands = new List<ICommand>();
+
+    public void AddCommand(ICommand command)
+    {
+        _commands.Add(command);
+    }
+
+    public void Execute()
+    {
+        foreach (var command in _commands)
+        {
+            command.Execute();
+        }
+    }
+
+    public void Undo()
+    {
+        for (int i = _commands.Count - 1; i >= 0; i--)
+        {
+            _commands[i].Undo();
+        }
+    }
+}
+
+// Логирование команд
+public static class Logger
+{
+    public static void Log(string message)
+    {
+        Console.WriteLine($"Лог: {message}");
+    }
+}
+
+// 6. Клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создаем устройства
+        Light livingRoomLight = new Light();
+        Television tv = new Television();
+        AirConditioner ac = new AirConditioner();
+
+        // Создаем команды для управления устройствами
+        ICommand lightOn = new LightOnCommand(livingRoomLight);
+        ICommand lightOff = new LightOffCommand(livingRoomLight);
+        ICommand tvOn = new TelevisionOnCommand(tv);
+        ICommand tvOff = new TelevisionOffCommand(tv);
+        ICommand acOn = new AirConditionerOnCommand(ac);
+        ICommand acOff = new AirConditionerOffCommand(ac);
+
+        // Создаем пульт и привязываем команды к кнопкам
+        RemoteControl remote = new RemoteControl();
+
+        // Управляем светом
+        remote.SetCommands(lightOn, lightOff);
+        Console.WriteLine("Управление светом:");
+        remote.PressOnButton();
+        remote.PressOffButton();
+        remote.PressUndoButton();
+
+        // Управляем телевизором
+        remote.SetCommands(tvOn, tvOff);
+        Console.WriteLine("\nУправление телевизором:");
+        remote.PressOnButton();
+        remote.PressOffButton();
+        remote.PressUndoButton();
+
+        // Управляем кондиционером
+        remote.SetCommands(acOn, acOff);
+        Console.WriteLine("\nУправление кондиционером:");
+        remote.PressOnButton();
+        remote.PressOffButton();
+        remote.PressUndoButton();
+
+        // Пример использования макрокоманды
+        MacroCommand macroCommand = new MacroCommand();
+        macroCommand.AddCommand(lightOn);
+        macroCommand.AddCommand(tvOn);
+        macroCommand.AddCommand(acOn);
+
+        Console.WriteLine("\nВыполнение макрокоманды:");
+        macroCommand.Execute();
+        Console.WriteLine("Отмена макрокоманды:");
+        macroCommand.Undo();
+    }
+}
