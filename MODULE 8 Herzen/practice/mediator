@@ -1,0 +1,132 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс IMediator
+public interface IMediator
+{
+    void SendMessage(string message, IUser sender, string channel);
+    void AddUser(IUser user, string channel);
+    void RemoveUser(IUser user, string channel);
+}
+
+// Интерфейс IUser
+public interface IUser
+{
+    void ReceiveMessage(string message);
+    string Name { get; }
+    void JoinChannel(string channel);
+    void LeaveChannel(string channel);
+    void SendMessage(string message, string channel); // Добавлено в интерфейс
+}
+
+// Класс ChatMediator
+public class ChatMediator : IMediator
+{
+    private readonly Dictionary<string, List<IUser>> _channels;
+
+    public ChatMediator()
+    {
+        _channels = new Dictionary<string, List<IUser>>();
+    }
+
+    public void SendMessage(string message, IUser sender, string channel)
+    {
+        if (!_channels.ContainsKey(channel))
+        {
+            Console.WriteLine($"Канал '{channel}' не существует. Создание нового канала.");
+            _channels[channel] = new List<IUser>();
+        }
+
+        foreach (var user in _channels[channel])
+        {
+            if (user != sender)
+            {
+                user.ReceiveMessage($"{sender.Name} в канале '{channel}': {message}");
+            }
+        }
+    }
+
+    public void AddUser(IUser user, string channel)
+    {
+        if (!_channels.ContainsKey(channel))
+        {
+            _channels[channel] = new List<IUser>();
+        }
+
+        _channels[channel].Add(user);
+        Console.WriteLine($"{user.Name} присоединился к каналу '{channel}'.");
+    }
+
+    public void RemoveUser(IUser user, string channel)
+    {
+        if (_channels.ContainsKey(channel))
+        {
+            _channels[channel].Remove(user);
+            Console.WriteLine($"{user.Name} покинул канал '{channel}'.");
+        }
+    }
+}
+
+// Класс User
+public class User : IUser
+{
+    public string Name { get; }
+
+    private readonly IMediator _mediator;
+
+    public User(string name, IMediator mediator)
+    {
+        Name = name;
+        _mediator = mediator;
+    }
+
+    public void SendMessage(string message, string channel)
+    {
+        _mediator.SendMessage(message, this, channel);
+    }
+
+    public void JoinChannel(string channel)
+    {
+        _mediator.AddUser(this, channel);
+    }
+
+    public void LeaveChannel(string channel)
+    {
+        _mediator.RemoveUser(this, channel);
+    }
+
+    public void ReceiveMessage(string message)
+    {
+        Console.WriteLine($"{Name} получил сообщение: {message}");
+    }
+}
+
+// Клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        IMediator mediator = new ChatMediator();
+
+        IUser user1 = new User("Алиса", mediator);
+        IUser user2 = new User("Боб", mediator);
+        IUser user3 = new User("Чарли", mediator);
+
+        // Присоединение пользователей к каналу
+        user1.JoinChannel("Общий");
+        user2.JoinChannel("Общий");
+        user3.JoinChannel("Общий");
+
+        // Отправка сообщений
+        user1.SendMessage("Привет всем!", "Общий");
+        user2.SendMessage("Привет, Алиса!", "Общий");
+
+        // Пользователь Чарли присоединяется к другому каналу
+        user3.JoinChannel("Специальный");
+        user3.SendMessage("Кто-нибудь здесь?", "Специальный");
+
+        // Пользователь Алиса покидает канал
+        user1.LeaveChannel("Общий");
+        user2.SendMessage("Где Алиса?", "Общий");
+    }
+}
