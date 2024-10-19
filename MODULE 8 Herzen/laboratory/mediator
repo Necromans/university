@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс Посредник
+public interface IMediator
+{
+    void SendMessage(string message, Colleague colleague);
+    void RegisterColleague(Colleague colleague);
+}
+
+// Абстрактный класс для участников чата
+public abstract class Colleague
+{
+    protected IMediator _mediator;
+    public Colleague(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+    public abstract void ReceiveMessage(string message);
+}
+
+// Конкретный класс посредника
+public class ChatMediator : IMediator
+{
+    private List<Colleague> _colleagues;
+    private Dictionary<Colleague, List<string>> _messageHistory;
+
+    public ChatMediator()
+    {
+        _colleagues = new List<Colleague>();
+        _messageHistory = new Dictionary<Colleague, List<string>>();
+    }
+
+    public void RegisterColleague(Colleague colleague)
+    {
+        _colleagues.Add(colleague);
+        _messageHistory[colleague] = new List<string>(); // Инициализация истории сообщений
+    }
+
+    public void SendMessage(string message, Colleague sender)
+    {
+        foreach (var colleague in _colleagues)
+        {
+            if (colleague != sender)
+            {
+                colleague.ReceiveMessage(message);
+                _messageHistory[colleague].Add(message); // Логирование сообщений
+            }
+        }
+    }
+
+    public void SendPrivateMessage(string message, Colleague sender, Colleague receiver)
+    {
+        if (_colleagues.Contains(receiver))
+        {
+            receiver.ReceiveMessage($"(Приватное сообщение от {((User)sender)._name}): {message}");
+            _messageHistory[receiver].Add(message); // Логирование приватного сообщения
+        }
+        else
+        {
+            Console.WriteLine("Ошибка: Участник не зарегистрирован в чате.");
+        }
+    }
+}
+
+// Конкретный участник чата
+public class User : Colleague
+{
+    public string _name;
+
+    public User(IMediator mediator, string name) : base(mediator)
+    {
+        _name = name;
+    }
+
+    public void Send(string message)
+    {
+        Console.WriteLine($"{_name} отправляет сообщение: {message}");
+        _mediator.SendMessage(message, this);
+    }
+
+    public void SendPrivate(string message, Colleague receiver)
+    {
+        Console.WriteLine($"{_name} отправляет приватное сообщение: {message}");
+        if (_mediator is ChatMediator chatMediator)
+        {
+            chatMediator.SendPrivateMessage(message, this, receiver);
+        }
+    }
+
+    public override void ReceiveMessage(string message)
+    {
+        Console.WriteLine($"{_name} получил сообщение: {message}");
+    }
+}
+
+// Основной класс для демонстрации
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создаем посредника
+        ChatMediator chatMediator = new ChatMediator();
+        
+        // Создаем участников
+        User user1 = new User(chatMediator, "Алиса");
+        User user2 = new User(chatMediator, "Боб");
+        User user3 = new User(chatMediator, "Чарли");
+        
+        // Регистрируем участников в чате
+        chatMediator.RegisterColleague(user1);
+        chatMediator.RegisterColleague(user2);
+        chatMediator.RegisterColleague(user3);
+        
+        // Участники обмениваются сообщениями
+        user1.Send("Привет всем!");
+        user2.Send("Привет, Алиса!");
+        user3.Send("Всем привет!");
+        
+        // Приватное сообщение
+        user1.SendPrivate("Как дела, Боб?", user2);
+        
+        // Попробуем отправить сообщение участнику, который не зарегистрирован
+        User user4 = new User(chatMediator, "Дэйв");
+        chatMediator.SendMessage("Привет, Дэйв!", user4); // Это сообщение не дойдет, так как Дэйв не зарегистрирован.
+    }
+}
