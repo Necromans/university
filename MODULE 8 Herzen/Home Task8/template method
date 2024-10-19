@@ -1,0 +1,114 @@
+using System;
+
+// 1. Абстрактный класс Beverage — шаблонный метод
+public abstract class Beverage
+{
+    // Шаблонный метод, определяющий последовательность шагов
+    public void PrepareRecipe()
+    {
+        BoilWater();
+        Brew();
+        PourInCup();
+        if (CustomerWantsCondiments())
+        {
+            AddCondiments();
+        }
+    }
+
+    // Общие шаги для всех напитков
+    private void BoilWater()
+    {
+        Console.WriteLine("Кипячение воды");
+    }
+
+    private void PourInCup()
+    {
+        Console.WriteLine("Наливание в чашку");
+    }
+
+    // Уникальные шаги для каждого напитка, определенные в подклассах
+    protected abstract void Brew();
+    protected abstract void AddCondiments();
+
+    // Перехватываемый метод (hook) — может быть переопределен подклассами
+    protected virtual bool CustomerWantsCondiments()
+    {
+        return true; // По умолчанию — добавить добавки
+    }
+}
+
+// 2. Конкретные классы Tea и Coffee
+
+public class Tea : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание чая");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление лимона");
+    }
+}
+
+public class Coffee : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание кофе");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление сахара и молока");
+    }
+
+    // Переопределение hook метода, чтобы спросить пользователя
+    protected override bool CustomerWantsCondiments()
+    {
+        Console.Write("Вы хотите добавить сахар и молоко? (y/n): ");
+        string input = Console.ReadLine();
+        return input.ToLower() == "y";
+    }
+}
+
+// 3. Новый напиток - горячий шоколад
+public class HotChocolate : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Приготовление горячего шоколада");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление взбитых сливок");
+    }
+}
+
+// 4. Клиентский код
+public class BeverageTest
+{
+    public static void Main(string[] args)
+    {
+        // Приготовление чая
+        Beverage tea = new Tea();
+        Console.WriteLine("Приготовление чая:");
+        tea.PrepareRecipe();
+
+        Console.WriteLine();
+
+        // Приготовление кофе с возможностью отказаться от добавок
+        Beverage coffee = new Coffee();
+        Console.WriteLine("Приготовление кофе:");
+        coffee.PrepareRecipe();
+
+        Console.WriteLine();
+
+        // Приготовление горячего шоколада
+        Beverage hotChocolate = new HotChocolate();
+        Console.WriteLine("Приготовление горячего шоколада:");
+        hotChocolate.PrepareRecipe();
+    }
+}
