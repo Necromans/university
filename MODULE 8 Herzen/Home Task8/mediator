@@ -1,0 +1,101 @@
+using System;
+using System.Collections.Generic;
+
+// 1. Интерфейс IMediator
+public interface IMediator
+{
+    void SendMessage(string message, User sender);
+    void AddUser(User user);
+}
+
+// 2. Класс ChatRoom (конкретный посредник)
+public class ChatRoom : IMediator
+{
+    private readonly List<User> _users = new List<User>();
+
+    public void AddUser(User user)
+    {
+        _users.Add(user);
+        user.SetMediator(this);
+        Notify($"{user.Name} присоединился к чату.");
+    }
+
+    public void SendMessage(string message, User sender)
+    {
+        foreach (var user in _users)
+        {
+            // Не отправляем сообщение отправителю
+            if (user != sender)
+            {
+                user.ReceiveMessage(message);
+            }
+        }
+    }
+
+    private void Notify(string message)
+    {
+        foreach (var user in _users)
+        {
+            user.ReceiveMessage(message);
+        }
+    }
+}
+
+// 3. Класс User (участники чата)
+public class User
+{
+    public string Name { get; }
+    private IMediator _mediator;
+
+    public User(string name)
+    {
+        Name = name;
+    }
+
+    public void SetMediator(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public void SendMessage(string message)
+    {
+        if (_mediator == null)
+        {
+            Console.WriteLine($"{Name} не может отправить сообщение, так как он не в чате.");
+            return;
+        }
+
+        Console.WriteLine($"{Name} отправляет сообщение: {message}");
+        _mediator.SendMessage(message, this);
+    }
+
+    public void ReceiveMessage(string message)
+    {
+        Console.WriteLine($"{Name} получил сообщение: {message}");
+    }
+}
+
+// 4. Клиентский код
+public class ChatClient
+{
+    public static void Main(string[] args)
+    {
+        ChatRoom chatRoom = new ChatRoom();
+
+        User alice = new User("Алиса");
+        User bob = new User("Боб");
+        User charlie = new User("Чарли");
+
+        chatRoom.AddUser(alice);
+        chatRoom.AddUser(bob);
+        chatRoom.AddUser(charlie);
+
+        alice.SendMessage("Привет, всем!");
+        bob.SendMessage("Здравствуйте, Алиса!");
+        charlie.SendMessage("Привет, Боб и Алиса!");
+
+        // Попытка отправить сообщение без добавления в чат
+        User dave = new User("Дейв");
+        dave.SendMessage("Привет!"); // Дейв не в чате, поэтому сообщение не отправляется
+    }
+}
