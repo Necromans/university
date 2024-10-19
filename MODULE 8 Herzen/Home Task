@@ -1,0 +1,197 @@
+using System;
+using System.Collections.Generic;
+
+// 1. Интерфейс команды
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+// 2. Классы устройств (Light, Door, Thermostat)
+
+public class Light
+{
+    public void TurnOn() => Console.WriteLine("Свет включен");
+    public void TurnOff() => Console.WriteLine("Свет выключен");
+}
+
+public class Door
+{
+    public void Open() => Console.WriteLine("Дверь открыта");
+    public void Close() => Console.WriteLine("Дверь закрыта");
+}
+
+public class Thermostat
+{
+    private int _temperature;
+
+    public void IncreaseTemperature(int degrees)
+    {
+        _temperature += degrees;
+        Console.WriteLine($"Температура увеличена до {_temperature} градусов");
+    }
+
+    public void DecreaseTemperature(int degrees)
+    {
+        _temperature -= degrees;
+        Console.WriteLine($"Температура уменьшена до {_temperature} градусов");
+    }
+}
+
+// 3. Конкретные команды
+
+// Команда для управления светом
+public class LightOnCommand : ICommand
+{
+    private readonly Light _light;
+
+    public LightOnCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute() => _light.TurnOn();
+    
+    public void Undo() => _light.TurnOff();
+}
+
+public class LightOffCommand : ICommand
+{
+    private readonly Light _light;
+
+    public LightOffCommand(Light light)
+    {
+        _light = light;
+    }
+
+    public void Execute() => _light.TurnOff();
+    
+    public void Undo() => _light.TurnOn();
+}
+
+// Команда для управления дверью
+public class DoorOpenCommand : ICommand
+{
+    private readonly Door _door;
+
+    public DoorOpenCommand(Door door)
+    {
+        _door = door;
+    }
+
+    public void Execute() => _door.Open();
+    
+    public void Undo() => _door.Close();
+}
+
+public class DoorCloseCommand : ICommand
+{
+    private readonly Door _door;
+
+    public DoorCloseCommand(Door door)
+    {
+        _door = door;
+    }
+
+    public void Execute() => _door.Close();
+    
+    public void Undo() => _door.Open();
+}
+
+// Команды для управления термостатом
+public class ThermostatIncreaseCommand : ICommand
+{
+    private readonly Thermostat _thermostat;
+    private readonly int _degrees;
+
+    public ThermostatIncreaseCommand(Thermostat thermostat, int degrees)
+    {
+        _thermostat = thermostat;
+        _degrees = degrees;
+    }
+
+    public void Execute() => _thermostat.IncreaseTemperature(_degrees);
+    
+    public void Undo() => _thermostat.DecreaseTemperature(_degrees);
+}
+
+public class ThermostatDecreaseCommand : ICommand
+{
+    private readonly Thermostat _thermostat;
+    private readonly int _degrees;
+
+    public ThermostatDecreaseCommand(Thermostat thermostat, int degrees)
+    {
+        _thermostat = thermostat;
+        _degrees = degrees;
+    }
+
+    public void Execute() => _thermostat.DecreaseTemperature(_degrees);
+    
+    public void Undo() => _thermostat.IncreaseTemperature(_degrees);
+}
+
+// 4. Класс Invoker (вызывает команды и управляет историей)
+public class RemoteControl
+{
+    private readonly Stack<ICommand> _commandHistory = new Stack<ICommand>();
+
+    public void ExecuteCommand(ICommand command)
+    {
+        command.Execute();
+        _commandHistory.Push(command);
+    }
+
+    public void UndoCommand()
+    {
+        if (_commandHistory.Count > 0)
+        {
+            var command = _commandHistory.Pop();
+            command.Undo();
+        }
+        else
+        {
+            Console.WriteLine("Нет команд для отмены");
+        }
+    }
+}
+
+// 5. Клиентский код
+public class SmartHomeDemo
+{
+    public static void Main(string[] args)
+    {
+        // Создание устройств
+        var light = new Light();
+        var door = new Door();
+        var thermostat = new Thermostat();
+
+        // Создание команд
+        ICommand lightOn = new LightOnCommand(light);
+        ICommand lightOff = new LightOffCommand(light);
+        ICommand doorOpen = new DoorOpenCommand(door);
+        ICommand doorClose = new DoorCloseCommand(door);
+        ICommand increaseTemp = new ThermostatIncreaseCommand(thermostat, 5);
+        ICommand decreaseTemp = new ThermostatDecreaseCommand(thermostat, 5);
+
+        // Создание пульта управления
+        var remoteControl = new RemoteControl();
+
+        // Управление светом
+        remoteControl.ExecuteCommand(lightOn);
+        remoteControl.UndoCommand();
+
+        // Управление дверью
+        remoteControl.ExecuteCommand(doorOpen);
+        remoteControl.UndoCommand();
+
+        // Управление термостатом
+        remoteControl.ExecuteCommand(increaseTemp);
+        remoteControl.UndoCommand();
+
+        // Дополнительная команда: выключение света
+        remoteControl.ExecuteCommand(lightOff);
+        remoteControl.UndoCommand();
+    }
+}
