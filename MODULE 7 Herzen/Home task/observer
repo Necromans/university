@@ -1,0 +1,105 @@
+using System;
+using System.Collections.Generic;
+
+// 1. Интерфейс IObserver
+public interface IObserver
+{
+    void Update(string currency, decimal rate);
+}
+
+// 2. Интерфейс ISubject
+public interface ISubject
+{
+    void Attach(IObserver observer);
+    void Detach(IObserver observer);
+    void Notify();
+}
+
+// 3. Класс субъекта CurrencyExchange
+public class CurrencyExchange : ISubject
+{
+    private List<IObserver> _observers = new List<IObserver>();
+    private Dictionary<string, decimal> _exchangeRates = new Dictionary<string, decimal>();
+
+    public void Attach(IObserver observer)
+    {
+        _observers.Add(observer);
+    }
+
+    public void Detach(IObserver observer)
+    {
+        _observers.Remove(observer);
+    }
+
+    public void Notify()
+    {
+        foreach (var observer in _observers)
+        {
+            foreach (var rate in _exchangeRates)
+            {
+                observer.Update(rate.Key, rate.Value);
+            }
+        }
+    }
+
+    public void SetExchangeRate(string currency, decimal rate)
+    {
+        _exchangeRates[currency] = rate;
+        Notify(); // Уведомляем наблюдателей об изменении курса
+    }
+}
+
+// 4. Наблюдатели
+public class MobileApp : IObserver
+{
+    public void Update(string currency, decimal rate)
+    {
+        Console.WriteLine($"Mobile App: Курс {currency} обновлен до {rate}");
+    }
+}
+
+public class WebApp : IObserver
+{
+    public void Update(string currency, decimal rate)
+    {
+        Console.WriteLine($"Web App: Курс {currency} обновлен до {rate}");
+    }
+}
+
+public class EmailNotification : IObserver
+{
+    public void Update(string currency, decimal rate)
+    {
+        Console.WriteLine($"Email Notification: Курс {currency} обновлен до {rate}");
+    }
+}
+
+// 5. Клиентский код
+public class ObserverPatternDemo
+{
+    public static void Main(string[] args)
+    {
+        CurrencyExchange currencyExchange = new CurrencyExchange();
+
+        // Создаем наблюдателей
+        MobileApp mobileApp = new MobileApp();
+        WebApp webApp = new WebApp();
+        EmailNotification emailNotification = new EmailNotification();
+
+        // Подписываем наблюдателей на изменения
+        currencyExchange.Attach(mobileApp);
+        currencyExchange.Attach(webApp);
+        currencyExchange.Attach(emailNotification);
+
+        // Изменяем курсы валют и уведомляем наблюдателей
+        currencyExchange.SetExchangeRate("USD", 75.50m);
+        currencyExchange.SetExchangeRate("EUR", 90.00m);
+
+        // Удаляем наблюдателя
+        currencyExchange.Detach(mobileApp);
+        Console.WriteLine("Mobile App отписан от обновлений.");
+
+        // Изменяем курс снова
+        currencyExchange.SetExchangeRate("GBP", 105.00m);
+    }
+}
