@@ -1,0 +1,88 @@
+using System;
+
+// 1. Интерфейс IPaymentStrategy
+public interface IPaymentStrategy
+{
+    void Pay(decimal amount);
+}
+
+// 2. Классы-стратегии для различных способов оплаты
+public class CreditCardPayment : IPaymentStrategy
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Оплата банковской картой на сумму {amount}");
+    }
+}
+
+public class PayPalPayment : IPaymentStrategy
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Оплата через PayPal на сумму {amount}");
+    }
+}
+
+public class CryptocurrencyPayment : IPaymentStrategy
+{
+    public void Pay(decimal amount)
+    {
+        Console.WriteLine($"Оплата криптовалютой на сумму {amount}");
+    }
+}
+
+// 3. Класс контекста PaymentContext
+public class PaymentContext
+{
+    private IPaymentStrategy _paymentStrategy;
+
+    public void SetPaymentStrategy(IPaymentStrategy paymentStrategy)
+    {
+        _paymentStrategy = paymentStrategy;
+    }
+
+    public void ExecutePayment(decimal amount)
+    {
+        if (_paymentStrategy == null)
+        {
+            Console.WriteLine("Не выбрана стратегия оплаты.");
+            return;
+        }
+        _paymentStrategy.Pay(amount);
+    }
+}
+
+// 4. Клиентский код
+public class PaymentClient
+{
+    public static void Main(string[] args)
+    {
+        PaymentContext paymentContext = new PaymentContext();
+
+        Console.WriteLine("Выберите способ оплаты:");
+        Console.WriteLine("1 - Банковская карта");
+        Console.WriteLine("2 - PayPal");
+        Console.WriteLine("3 - Криптовалюта");
+
+        string choice = Console.ReadLine();
+        decimal amount = 100.00m; // Примерная сумма для оплаты
+
+        switch (choice)
+        {
+            case "1":
+                paymentContext.SetPaymentStrategy(new CreditCardPayment());
+                break;
+            case "2":
+                paymentContext.SetPaymentStrategy(new PayPalPayment());
+                break;
+            case "3":
+                paymentContext.SetPaymentStrategy(new CryptocurrencyPayment());
+                break;
+            default:
+                Console.WriteLine("Некорректный выбор. Стратегия оплаты не выбрана.");
+                return;
+        }
+
+        paymentContext.ExecutePayment(amount);
+    }
+}
