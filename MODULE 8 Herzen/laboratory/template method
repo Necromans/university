@@ -1,0 +1,133 @@
+using System;
+
+// Базовый класс Beverage
+public abstract class Beverage
+{
+    private bool _wantsCondiments = true; // По умолчанию добавляем приправы
+
+    // Шаблонный метод
+    public void PrepareRecipe()
+    {
+        BoilWater();
+        Brew();
+        PourInCup();
+        if (_wantsCondiments)
+        {
+            AddCondiments();
+        }
+    }
+
+    // Общий шаг для всех напитков
+    private void BoilWater()
+    {
+        Console.WriteLine("Кипячение воды...");
+    }
+
+    // Общий шаг для всех напитков
+    private void PourInCup()
+    {
+        Console.WriteLine("Наливание в чашку...");
+    }
+
+    // Метод для установки флага добавления приправ
+    public void SetWantsCondiments(bool wantsCondiments)
+    {
+        _wantsCondiments = wantsCondiments;
+    }
+
+    // Абстрактные методы для шагов, которые будут реализованы в подклассах
+    protected abstract void Brew();
+    protected abstract void AddCondiments();
+}
+
+// Класс для приготовления чая
+public class Tea : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание чая...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление лимона...");
+    }
+}
+
+// Класс для приготовления кофе
+public class Coffee : Beverage
+{
+    private string _milkType = "молоко"; // По умолчанию добавляется обычное молоко
+    private bool _hasIngredients = true; // Проверка наличия ингредиентов
+
+    public void SetMilkType(string milkType)
+    {
+        _milkType = milkType;
+    }
+
+    public void SetHasIngredients(bool hasIngredients)
+    {
+        _hasIngredients = hasIngredients;
+    }
+
+    protected override void Brew()
+    {
+        Console.WriteLine("Заваривание кофе...");
+    }
+
+    protected override void AddCondiments()
+    {
+        if (!_hasIngredients)
+        {
+            Console.WriteLine("Ошибка: Недостаточно ингредиентов для добавления приправ.");
+            return;
+        }
+        Console.WriteLine($"Добавление сахара и {_milkType}...");
+    }
+}
+
+// Новый напиток: горячий шоколад
+public class HotChocolate : Beverage
+{
+    protected override void Brew()
+    {
+        Console.WriteLine("Приготовление горячего шоколада...");
+    }
+
+    protected override void AddCondiments()
+    {
+        Console.WriteLine("Добавление взбитых сливок...");
+    }
+}
+
+// Основной класс для демонстрации
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Приготовление чая
+        Beverage tea = new Tea();
+        Console.WriteLine("Приготовление чая:");
+        tea.PrepareRecipe();
+        Console.WriteLine();
+
+        // Приготовление кофе
+        Coffee coffee = new Coffee();
+        coffee.SetWantsCondiments(true); // Пользователь хочет добавление приправ
+        coffee.SetMilkType("миндальное молоко");
+        Console.WriteLine("Приготовление кофе:");
+        coffee.PrepareRecipe();
+        Console.WriteLine();
+
+        // Проверка на недостаток ингредиентов
+        coffee.SetHasIngredients(false); // Установка флага на отсутствие ингредиентов
+        Console.WriteLine("Приготовление кофе без ингредиентов:");
+        coffee.PrepareRecipe();
+        Console.WriteLine();
+
+        // Приготовление горячего шоколада
+        Beverage hotChocolate = new HotChocolate();
+        Console.WriteLine("Приготовление горячего шоколада:");
+        hotChocolate.PrepareRecipe();
+    }
+}
