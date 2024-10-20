@@ -1,0 +1,145 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс для наблюдателей
+public interface IObserver
+{
+    void Update(float temperature);
+}
+
+// Интерфейс для WeatherStation
+public interface ISubject
+{
+    void RegisterObserver(IObserver observer);
+    void RemoveObserver(IObserver observer);
+    void NotifyObservers();
+}
+
+// Класс WeatherStation 
+public class WeatherStation : ISubject
+{
+    private List<IObserver> observers;
+    private float temperature;
+
+    public WeatherStation()
+    {
+        observers = new List<IObserver>();
+    }
+
+    public void RegisterObserver(IObserver observer)
+    {
+        if (observer != null && !observers.Contains(observer))
+        {
+            observers.Add(observer);
+        }
+    }
+
+    public void RemoveObserver(IObserver observer)
+    {
+        if (observer != null && observers.Contains(observer))
+        {
+            observers.Remove(observer);
+        }
+        else
+        {
+            Console.WriteLine("Ошибка: Попытка удалить несуществующего наблюдателя.");
+        }
+    }
+
+    public void NotifyObservers()
+    {
+        foreach (var observer in observers)
+        {
+            observer.Update(temperature);
+        }
+    }
+
+    public void SetTemperature(float newTemperature)
+    {
+        if (newTemperature < -50 || newTemperature > 50)  // Допустимый диапазон температур
+        {
+            Console.WriteLine("Ошибка: Некорректная температура.");
+            return;
+        }
+        Console.WriteLine($"Изменение температуры: {newTemperature}°C");
+        temperature = newTemperature;
+        NotifyObservers();
+    }
+}
+
+// Класс WeatherDisplay (наблюдатель)
+public class WeatherDisplay : IObserver
+{
+    private string _name;
+
+    public WeatherDisplay(string name)
+    {
+        _name = name;
+    }
+
+    public void Update(float temperature)
+    {
+        Console.WriteLine($"{_name} показывает новую температуру: {temperature}°C");
+    }
+}
+
+// Новый тип наблюдателя: Email оповещение
+public class EmailAlert : IObserver
+{
+    private string _emailAddress;
+
+    public EmailAlert(string emailAddress)
+    {
+        _emailAddress = emailAddress;
+    }
+
+    public void Update(float temperature)
+    {
+        Console.WriteLine($"Email на {_emailAddress}: новая температура {temperature}°C");
+    }
+}
+
+// Новый тип наблюдателя: Звуковое уведомление
+public class SoundAlert : IObserver
+{
+    public void Update(float temperature)
+    {
+        Console.Beep();
+        Console.WriteLine($"Звуковое уведомление: температура {temperature}°C");
+    }
+}
+
+// Основной клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        WeatherStation weatherStation = new WeatherStation();
+
+        // Создаем несколько наблюдателей
+        WeatherDisplay mobileApp = new WeatherDisplay("Мобильное приложение");
+        WeatherDisplay digitalBillboard = new WeatherDisplay("Электронное табло");
+        EmailAlert emailAlert = new EmailAlert("user@example.com");
+        SoundAlert soundAlert = new SoundAlert();
+
+        // Регистрируем наблюдателей в системе
+        weatherStation.RegisterObserver(mobileApp);
+        weatherStation.RegisterObserver(digitalBillboard);
+        weatherStation.RegisterObserver(emailAlert);
+        weatherStation.RegisterObserver(soundAlert);
+
+        // Изменяем температуру на станции, что приводит к уведомлению наблюдателей
+        weatherStation.SetTemperature(25.0f);
+        weatherStation.SetTemperature(30.0f);
+
+        // Убираем одно из табло и снова меняем температуру
+        weatherStation.RemoveObserver(digitalBillboard);
+        weatherStation.SetTemperature(28.0f);
+
+        // Пробуем установить некорректную температуру
+        weatherStation.SetTemperature(-100.0f);
+
+        // Пробуем удалить несуществующего наблюдателя
+        weatherStation.RemoveObserver(digitalBillboard);
+    }
+}
