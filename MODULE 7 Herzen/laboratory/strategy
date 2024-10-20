@@ -1,0 +1,129 @@
+using System;
+
+public interface IShippingStrategy
+{
+    decimal CalculateShippingCost(decimal weight, decimal distance);
+}
+
+// Стандартная доставка
+public class StandardShippingStrategy : IShippingStrategy
+{
+    public decimal CalculateShippingCost(decimal weight, decimal distance)
+    {
+        return weight * 0.5m + distance * 0.1m;
+    }
+}
+
+// Экспресс-доставка
+public class ExpressShippingStrategy : IShippingStrategy
+{
+    public decimal CalculateShippingCost(decimal weight, decimal distance)
+    {
+        return (weight * 0.75m + distance * 0.2m) + 10; // Дополнительная плата за скорость
+    }
+}
+
+// Международная доставка
+public class InternationalShippingStrategy : IShippingStrategy
+{
+    public decimal CalculateShippingCost(decimal weight, decimal distance)
+    {
+        return weight * 1.0m + distance * 0.5m + 15; // Дополнительные сборы за международную доставку
+    }
+}
+
+// Ночная доставка (новая стратегия)
+public class NightShippingStrategy : IShippingStrategy
+{
+    public decimal CalculateShippingCost(decimal weight, decimal distance)
+    {
+        return weight * 0.8m + distance * 0.15m + 20; // Надбавка за срочность
+    }
+}
+
+
+public class DeliveryContext
+{
+    private IShippingStrategy _shippingStrategy;
+
+    // Метод для установки стратегии доставки
+    public void SetShippingStrategy(IShippingStrategy strategy)
+    {
+        _shippingStrategy = strategy;
+    }
+
+    // Метод для расчета стоимости доставки
+    public decimal CalculateCost(decimal weight, decimal distance)
+    {
+        if (_shippingStrategy == null)
+        {
+            throw new InvalidOperationException("Стратегия доставки не установлена.");
+        }
+        return _shippingStrategy.CalculateShippingCost(weight, distance);
+    }
+}
+
+// Основной клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        DeliveryContext deliveryContext = new DeliveryContext();
+
+        // Пользовательский выбор типа доставки
+        Console.WriteLine("Выберите тип доставки: 1 - Стандартная, 2 - Экспресс, 3 - Международная, 4 - Ночная доставка");
+        string choice = Console.ReadLine();
+
+        // Установка стратегии доставки
+        switch (choice)
+        {
+            case "1":
+                deliveryContext.SetShippingStrategy(new StandardShippingStrategy());
+                break;
+            case "2":
+                deliveryContext.SetShippingStrategy(new ExpressShippingStrategy());
+                break;
+            case "3":
+                deliveryContext.SetShippingStrategy(new InternationalShippingStrategy());
+                break;
+            case "4":
+                deliveryContext.SetShippingStrategy(new NightShippingStrategy());
+                break;
+            default:
+                Console.WriteLine("Неверный выбор.");
+                return;
+        }
+
+        try
+        {
+            // Ввод данных пользователем
+            Console.WriteLine("Введите вес посылки (кг):");
+            decimal weight = Convert.ToDecimal(Console.ReadLine());
+
+            Console.WriteLine("Введите расстояние доставки (км):");
+            decimal distance = Convert.ToDecimal(Console.ReadLine());
+
+            // Проверка на корректность данных
+            if (weight <= 0 || distance <= 0)
+            {
+                throw new ArgumentException("Вес и расстояние должны быть положительными значениями.");
+            }
+
+            // Расчет стоимости
+            decimal cost = deliveryContext.CalculateCost(weight, distance);
+            Console.WriteLine($"Стоимость доставки: {cost}");
+        }
+        catch (FormatException)
+        {
+            Console.WriteLine("Ошибка: Введены некорректные данные. Введите числовые значения.");
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Произошла ошибка: {ex.Message}");
+        }
+    }
+}
