@@ -1,0 +1,188 @@
+using System;
+
+// 1. Класс продукта Computer
+public class Computer
+{
+    public string CPU { get; set; }
+    public string RAM { get; set; }
+    public string Storage { get; set; }
+    public string GPU { get; set; }
+    public string OS { get; set; }
+    public string Cooling { get; set; }
+    public string PowerSupply { get; set; }
+
+    public override string ToString()
+    {
+        return $"Компьютер: CPU - {CPU}, RAM - {RAM}, Накопитель - {Storage}, GPU - {GPU}, ОС - {OS}, Охлаждение - {Cooling}, Блок питания - {PowerSupply}";
+    }
+}
+
+// 2. Интерфейс строителя IComputerBuilder
+public interface IComputerBuilder
+{
+    void SetCPU();
+    void SetRAM();
+    void SetStorage();
+    void SetGPU();
+    void SetOS();
+    void SetCooling();
+    void SetPowerSupply();
+    bool Validate();  // Метод для проверки совместимости компонентов
+    Computer GetComputer();
+}
+
+// 3. Конкретные строители
+
+// OfficeComputerBuilder (офисный компьютер)
+public class OfficeComputerBuilder : IComputerBuilder
+{
+    private Computer _computer = new Computer();
+
+    public void SetCPU() => _computer.CPU = "Intel i3";
+    public void SetRAM() => _computer.RAM = "8GB";
+    public void SetStorage() => _computer.Storage = "1TB HDD";
+    public void SetGPU() => _computer.GPU = "Integrated";
+    public void SetOS() => _computer.OS = "Windows 10";
+    public void SetCooling() => _computer.Cooling = "Standard Air Cooling";
+    public void SetPowerSupply() => _computer.PowerSupply = "400W";
+
+    // Простой офисный компьютер, так что валидация проходит без ошибок
+    public bool Validate()
+    {
+        // Блок питания 400W достаточно для встроенной видеокарты и i3
+        return true;
+    }
+
+    public Computer GetComputer() => _computer;
+}
+
+// GamingComputerBuilder (игровой компьютер)
+public class GamingComputerBuilder : IComputerBuilder
+{
+    private Computer _computer = new Computer();
+
+    public void SetCPU() => _computer.CPU = "Intel i9";
+    public void SetRAM() => _computer.RAM = "32GB";
+    public void SetStorage() => _computer.Storage = "1TB SSD";
+    public void SetGPU() => _computer.GPU = "NVIDIA RTX 3080";
+    public void SetOS() => _computer.OS = "Windows 11";
+    public void SetCooling() => _computer.Cooling = "Liquid Cooling System";
+    public void SetPowerSupply() => _computer.PowerSupply = "750W";
+
+    // Валидация совместимости компонентов
+    public bool Validate()
+    {
+        // Простая проверка: GPU требует не менее 650W блока питания
+        if (_computer.GPU == "NVIDIA RTX 3080" && _computer.PowerSupply != "750W")
+        {
+            Console.WriteLine("Ошибка: Недостаточно мощности блока питания для видеокарты RTX 3080.");
+            return false;
+        }
+
+        // Для i9 и 32GB RAM рекомендуется использовать минимум 650W
+        if (_computer.CPU == "Intel i9" && _computer.PowerSupply != "750W")
+        {
+            Console.WriteLine("Ошибка: Недостаточно мощности блока питания для процессора i9.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public Computer GetComputer() => _computer;
+}
+
+// ServerComputerBuilder (серверный компьютер)
+public class ServerComputerBuilder : IComputerBuilder
+{
+    private Computer _computer = new Computer();
+
+    public void SetCPU() => _computer.CPU = "Intel Xeon";
+    public void SetRAM() => _computer.RAM = "64GB";
+    public void SetStorage() => _computer.Storage = "2TB SSD";
+    public void SetGPU() => _computer.GPU = "NVIDIA Quadro P4000";
+    public void SetOS() => _computer.OS = "Linux Server";
+    public void SetCooling() => _computer.Cooling = "Advanced Liquid Cooling";
+    public void SetPowerSupply() => _computer.PowerSupply = "1000W";
+
+    // Валидация компонентов для серверного компьютера
+    public bool Validate()
+    {
+        // Для сервера с Xeon, 64GB RAM и профессиональной видеокартой нужен минимум 850W
+        if (_computer.PowerSupply != "1000W")
+        {
+            Console.WriteLine("Ошибка: Недостаточно мощности блока питания для серверных компонентов.");
+            return false;
+        }
+
+        return true;
+    }
+
+    public Computer GetComputer() => _computer;
+}
+
+// 4. Директор ComputerDirector
+public class ComputerDirector
+{
+    private IComputerBuilder _builder;
+
+    public ComputerDirector(IComputerBuilder builder)
+    {
+        _builder = builder;
+    }
+
+    public void ConstructComputer()
+    {
+        _builder.SetCPU();
+        _builder.SetRAM();
+        _builder.SetStorage();
+        _builder.SetGPU();
+        _builder.SetOS();
+        _builder.SetCooling();
+        _builder.SetPowerSupply();
+    }
+
+    public Computer GetComputer()
+    {
+        if (_builder.Validate())
+        {
+            return _builder.GetComputer();
+        }
+        else
+        {
+            Console.WriteLine("Ошибка: Невозможно собрать компьютер из-за несовместимости компонентов.");
+            return null;
+        }
+    }
+}
+
+// 5. Клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Создаем офисный компьютер
+        IComputerBuilder officeBuilder = new OfficeComputerBuilder();
+        ComputerDirector director = new ComputerDirector(officeBuilder);
+        director.ConstructComputer();
+        Computer officeComputer = director.GetComputer();
+        if (officeComputer != null)
+            Console.WriteLine(officeComputer);
+
+        // Создаем игровой компьютер
+        IComputerBuilder gamingBuilder = new GamingComputerBuilder();
+        director = new ComputerDirector(gamingBuilder);
+        director.ConstructComputer();
+        Computer gamingComputer = director.GetComputer();
+        if (gamingComputer != null)
+            Console.WriteLine(gamingComputer);
+
+        // Создаем серверный компьютер
+        IComputerBuilder serverBuilder = new ServerComputerBuilder();
+        director = new ComputerDirector(serverBuilder);
+        director.ConstructComputer();
+        Computer serverComputer = director.GetComputer();
+        if (serverComputer != null)
+            Console.WriteLine(serverComputer);
+    }
+}
