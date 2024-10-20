@@ -1,0 +1,117 @@
+using System;
+using System.IO;
+using System.Threading;
+
+public enum LogLevel
+{
+    INFO,
+    WARNING,
+    ERROR
+}
+
+public class Logger
+{
+    private static Logger _instance;
+    private static readonly object _lock = new object();
+    private LogLevel _currentLogLevel = LogLevel.INFO;
+    private string _logFilePath = "log.txt";
+
+    // Приватный конструктор
+    private Logger() { }
+
+    // Метод для получения единственного экземпляра (потокобезопасный)
+    public static Logger GetInstance()
+    {
+        if (_instance == null)
+        {
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new Logger();
+                }
+            }
+        }
+        return _instance;
+    }
+
+    // Метод для логирования сообщений
+    public void Log(string message, LogLevel level)
+    {
+        if (level >= _currentLogLevel)
+        {
+            lock (_lock)
+            {
+                using (StreamWriter writer = new StreamWriter(_logFilePath, true))
+                {
+                    writer.WriteLine($"{DateTime.Now} [{level}] {message}");
+                }
+            }
+        }
+    }
+
+    // Метод для установки уровня логирования
+    public void SetLogLevel(LogLevel level)
+    {
+        _currentLogLevel = level;
+    }
+
+    // Метод для изменения пути к файлу логов
+    public void SetLogFilePath(string path)
+    {
+        _logFilePath = path;
+    }
+
+    // Метод для чтения логов и отображения на экране
+    public void DisplayLogs()
+    {
+        lock (_lock)
+        {
+            if (File.Exists(_logFilePath))
+            {
+                string[] logs = File.ReadAllLines(_logFilePath);
+                foreach (var log in logs)
+                {
+                    Console.WriteLine(log);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Лог-файл не найден.");
+            }
+        }
+    }
+}
+
+// Класс для тестирования 
+public class LoggerTest
+{
+    public static void LogInThread(string message, LogLevel level)
+    {
+        Logger logger = Logger.GetInstance();
+        logger.Log(message, level);
+    }
+
+    public static void Main(string[] args)
+    {
+        Logger logger = Logger.GetInstance();
+        logger.SetLogFilePath("multithread_log.txt");
+        logger.SetLogLevel(LogLevel.INFO);
+
+        // Создание нескольких потоков для тестирования
+        Thread thread1 = new Thread(() => LogInThread("Информационное сообщение потока 1", LogLevel.INFO));
+        Thread thread2 = new Thread(() => LogInThread("Предупреждающие сообщение потока 2", LogLevel.WARNING));
+        Thread thread3 = new Thread(() => LogInThread("Ошибка сообщение потока 3", LogLevel.ERROR));
+
+        thread1.Start();
+        thread2.Start();
+        thread3.Start();
+
+        thread1.Join();
+        thread2.Join();
+        thread3.Join();
+
+        // Чтение и вывод логов
+        logger.DisplayLogs();
+    }
+}
