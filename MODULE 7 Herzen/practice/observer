@@ -1,0 +1,125 @@
+using System;
+using System.Collections.Generic;
+
+// Интерфейс для наблюдателей
+public interface IObserver
+{
+    void Update(string stockName, decimal price);
+}
+
+// Интерфейс для субъекта (Биржа)
+public interface ISubject
+{
+    void RegisterObserver(IObserver observer, string stockName);
+    void RemoveObserver(IObserver observer, string stockName);
+    void NotifyObservers(string stockName);
+}
+
+// Класс, представляющий биржу
+public class StockExchange : ISubject
+{
+    private readonly Dictionary<string, List<IObserver>> _observers;
+    private readonly Dictionary<string, decimal> _stockPrices;
+
+    public StockExchange()
+    {
+        _observers = new Dictionary<string, List<IObserver>>();
+        _stockPrices = new Dictionary<string, decimal>();
+    }
+
+    public void RegisterObserver(IObserver observer, string stockName)
+    {
+        if (!_observers.ContainsKey(stockName))
+        {
+            _observers[stockName] = new List<IObserver>();
+        }
+        _observers[stockName].Add(observer);
+    }
+
+    public void RemoveObserver(IObserver observer, string stockName)
+    {
+        if (_observers.ContainsKey(stockName))
+        {
+            _observers[stockName].Remove(observer);
+        }
+    }
+
+    public void NotifyObservers(string stockName)
+    {
+        if (_observers.ContainsKey(stockName))
+        {
+            foreach (var observer in _observers[stockName])
+            {
+                observer.Update(stockName, _stockPrices[stockName]);
+            }
+        }
+    }
+
+    public void SetStockPrice(string stockName, decimal price)
+    {
+        _stockPrices[stockName] = price;
+        Console.WriteLine($"Цена акции {stockName} изменена на {price}");
+        NotifyObservers(stockName);
+    }
+}
+
+// Класс трейдера
+public class Trader : IObserver
+{
+    private readonly string _name;
+
+    public Trader(string name)
+    {
+        _name = name;
+    }
+
+    public void Update(string stockName, decimal price)
+    {
+        Console.WriteLine($"{_name} получил уведомление: {stockName} = {price}");
+    }
+}
+
+// Класс автоматического торгового робота
+public class TradingRobot : IObserver
+{
+    private readonly string _name;
+
+    public TradingRobot(string name)
+    {
+        _name = name;
+    }
+
+    public void Update(string stockName, decimal price)
+    {
+        Console.WriteLine($"{_name} автоматически обработал изменение цены {stockName}: {price}");
+        // Логика автоматической торговли здесь
+    }
+}
+
+// Клиентский код
+class Program
+{
+    static void Main(string[] args)
+    {
+        StockExchange stockExchange = new StockExchange();
+
+        // Создаем трейдеров и роботов
+        Trader trader1 = new Trader("Трейдер 1");
+        Trader trader2 = new Trader("Трейдер 2");
+        TradingRobot robot1 = new TradingRobot("Робот 1");
+
+        // Подписка на акции
+        stockExchange.RegisterObserver(trader1, "AAPL");
+        stockExchange.RegisterObserver(trader2, "GOOGL");
+        stockExchange.RegisterObserver(robot1, "AAPL");
+
+        // Изменение цен акций
+        stockExchange.SetStockPrice("AAPL", 150.25m);
+        stockExchange.SetStockPrice("GOOGL", 2800.50m);
+        stockExchange.SetStockPrice("AAPL", 155.00m);
+
+        // Убираем трейдера и изменяем цену
+        stockExchange.RemoveObserver(trader2, "GOOGL");
+        stockExchange.SetStockPrice("GOOGL", 2790.00m);
+    }
+}
