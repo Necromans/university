@@ -1,0 +1,105 @@
+using System;
+
+// Интерфейс стратегии расчета стоимости
+public interface ICostCalculationStrategy
+{
+    decimal CalculateCost(decimal distance, int passengers, string serviceClass, bool hasDiscount, bool hasLuggage);
+}
+
+// Стратегия для самолета
+public class AirplaneCostCalculation : ICostCalculationStrategy
+{
+    public decimal CalculateCost(decimal distance, int passengers, string serviceClass, bool hasDiscount, bool hasLuggage)
+    {
+        decimal baseCost = distance * 0.5m * passengers; // Базовая стоимость
+        if (serviceClass == "Бизнес") baseCost += 100; // Доплата за бизнес-класс
+        if (hasDiscount) baseCost *= 0.9m;  // Скидка 10%
+        if (hasLuggage) baseCost += 20; // Доплата за багаж
+        return baseCost;
+    }
+}
+
+// Стратегия для поезда
+public class TrainCostCalculation : ICostCalculationStrategy
+{
+    public decimal CalculateCost(decimal distance, int passengers, string serviceClass, bool hasDiscount, bool hasLuggage)
+    {
+        decimal baseCost = distance * 0.3m * passengers; // Базовая стоимость
+        if (serviceClass == "Бизнес") baseCost += 50; // Доплата за бизнес-класс
+        if (hasDiscount) baseCost *= 0.85m;  // Скидка 15%
+        if (hasLuggage) baseCost += 15; // Доплата за багаж
+        return baseCost;
+    }
+}
+
+// Стратегия для автобуса
+public class BusCostCalculation : ICostCalculationStrategy
+{
+    public decimal CalculateCost(decimal distance, int passengers, string serviceClass, bool hasDiscount, bool hasLuggage)
+    {
+        decimal baseCost = distance * 0.2m * passengers; // Базовая стоимость
+        if (serviceClass == "Бизнес") baseCost += 30; // Доплата за бизнес-класс
+        if (hasDiscount) baseCost *= 0.8m;  // Скидка 20%
+        if (hasLuggage) baseCost += 10; // Доплата за багаж
+        return baseCost;
+    }
+}
+
+// Контекст для бронирования
+public class TravelBookingContext
+{
+    private ICostCalculationStrategy _strategy;
+
+    public void SetStrategy(ICostCalculationStrategy strategy)
+    {
+        _strategy = strategy;
+    }
+
+    public decimal CalculateCost(decimal distance, int passengers, string serviceClass, bool hasDiscount, bool hasLuggage)
+    {
+        if (_strategy == null)
+            throw new InvalidOperationException("Стратегия не установлена.");
+
+        return _strategy.CalculateCost(distance, passengers, serviceClass, hasDiscount, hasLuggage);
+    }
+}
+
+// Основной класс для тестирования
+class Program
+{
+    static void Main(string[] args)
+    {
+        TravelBookingContext bookingContext = new TravelBookingContext();
+
+        Console.WriteLine("Выберите тип транспорта: 1 - Самолет, 2 - Поезд, 3 - Автобус");
+        string choice = Console.ReadLine();
+
+        ICostCalculationStrategy strategy = choice switch
+        {
+            "1" => new AirplaneCostCalculation(),
+            "2" => new TrainCostCalculation(),
+            "3" => new BusCostCalculation(),
+            _ => throw new InvalidOperationException("Неверный выбор транспорта.")
+        };
+
+        bookingContext.SetStrategy(strategy);
+
+        Console.WriteLine("Введите расстояние (км):");
+        decimal distance = Convert.ToDecimal(Console.ReadLine());
+
+        Console.WriteLine("Введите количество пассажиров:");
+        int passengers = Convert.ToInt32(Console.ReadLine());
+
+        Console.WriteLine("Выберите класс обслуживания (Эконом/Бизнес):");
+        string serviceClass = Console.ReadLine();
+
+        Console.WriteLine("Есть ли скидка? (true/false):");
+        bool hasDiscount = Convert.ToBoolean(Console.ReadLine());
+
+        Console.WriteLine("Есть ли багаж? (true/false):");
+        bool hasLuggage = Convert.ToBoolean(Console.ReadLine());
+
+        decimal cost = bookingContext.CalculateCost(distance, passengers, serviceClass, hasDiscount, hasLuggage);
+        Console.WriteLine($"Стоимость поездки: {cost}");
+    }
+}
