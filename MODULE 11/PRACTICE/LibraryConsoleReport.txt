@@ -1,0 +1,52 @@
+1. Класс Book
+Атрибуты:
+Title: string — название книги.
+Author: string — автор книги.
+Genre: string — жанр книги.
+ISBN: string — уникальный идентификатор книги.
+Методы:
+ToString(): string — метод для вывода информации о книге.
+
+2. Класс Reader
+Атрибуты:
+FirstName: string — имя читателя.
+LastName: string — фамилия читателя.
+TicketNumber: int — номер билета читателя.
+Методы:
+ToString(): string — метод для вывода информации о читателе.
+
+3. Класс Librarian
+Атрибуты:
+Name: string — имя библиотекаря.
+Методы:
+IssueBook(reader: Reader, book: Book, accountSystem: AccountSystem): void — метод для выдачи книги читателю.
+ReturnBook(reader: Reader, book: Book, accountSystem: AccountSystem): void — метод для возврата книги.
+
+4. Класс Catalog
+Атрибуты:
+books: List<Book> — список всех книг в каталоге.
+Методы:
+AddBook(book: Book): void — метод для добавления книги в каталог.
+SearchBooks(searchTerm: string): List<Book> — метод для поиска книг по ключевому слову.
+FindBookByISBN(isbn: string): Book — метод для поиска книги по ISBN.
+
+5. Интерфейс IAccountSystem
+Методы:
+RecordIssue(reader: Reader, book: Book): void — метод для записи выдачи книги.
+RecordReturn(reader: Reader, book: Book): void — метод для записи возврата книги.
+ShowIssuedBooks(): void — метод для отображения всех выданных книг.
+
+6. Класс AccountSystem (реализует интерфейс IAccountSystem)
+Атрибуты:
+issuedBooks: Dictionary<Reader, List<Book>> — словарь для хранения выданных книг (ключ — читатель, значение — список книг).
+Методы:
+RecordIssue(reader: Reader, book: Book): void — метод для записи выдачи книги.
+RecordReturn(reader: Reader, book: Book): void — метод для записи возврата книги.
+ShowIssuedBooks(): void — метод для отображения всех выданных книг.
+Связи между классами:
+Book и Catalog: Класс Catalog содержит множество объектов Book.
+Reader и AccountSystem: Читатель взаимодействует с учетной системой, когда берет или возвращает книги.
+Librarian и Catalog: Библиотекарь управляет каталогом, добавляет книги, ищет книги.
+Librarian и AccountSystem: Библиотекарь работает с учетной системой для записи операций выдачи и возврата книг.
+AccountSystem и Book: Учетная система ведет учет выданных книг.
+AccountSystem и Reader: Учетная система хранит информацию о том, какие книги были выданы конкретному читателю.
