@@ -12,7 +12,7 @@ namespace OnlineStore
 
         public override string ToString()
         {
-            return $"ID: {ID}, Название: {Name}, Цена: {Price:C}";
+            return $"ID: {ID}, Название: {Name}, Цена: {Price}";
         }
     }
 
@@ -42,7 +42,7 @@ namespace OnlineStore
                 Console.WriteLine(product);
                 total += product.Price;
             }
-            Console.WriteLine($"Итого к оплате: {total:C}");
+            Console.WriteLine($"Итого к оплате: {total}");
         }
     }
 
