@@ -48,12 +48,12 @@ namespace TicketMachineApp
         {
             if (amount >= machine.TicketPrice)
             {
-                Console.WriteLine($"Деньги внесены: {amount:C}. Выдача билета...");
+                Console.WriteLine($"Деньги внесены: {amount}. Выдача билета...");
                 machine.SetState(new MoneyReceivedState());
             }
             else
             {
-                Console.WriteLine($"Недостаточно средств. Внесите еще {machine.TicketPrice - amount:C}.");
+                Console.WriteLine($"Недостаточно средств. Внесите еще {machine.TicketPrice - amount}.");
             }
         }
 
